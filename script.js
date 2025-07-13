@@ -313,8 +313,15 @@ function normalizeRating(rating, maxRating) {
 // 生成購買連結，將書名帶入搜尋 URL
 function generatePurchaseLinks(bookTitle, author = '') {
     // 清理書名，移除不必要的文字
-    let cleanTitle = bookTitle.replace(/資訊不足/g, '').trim();
-    const searchQuery = author ? `${cleanTitle} ${author}` : cleanTitle;
+    let cleanTitle = bookTitle
+        .replace(/資訊不足/g, '')
+        .replace(/\s+/g, ' ')  // 將多個空格合併為單個空格
+        .trim();
+    
+    // 清理作者名稱
+    let cleanAuthor = author ? author.replace(/資訊不足/g, '').trim() : '';
+    
+    const searchQuery = cleanAuthor ? `${cleanTitle} ${cleanAuthor}` : cleanTitle;
     const encodedQuery = encodeURIComponent(searchQuery);
     
     return [
@@ -381,7 +388,8 @@ function displayNoRatingsResults() {
     document.querySelector('.summary-section').style.display = 'none';
     
     // 更新書籍資訊
-    document.getElementById('bookTitleResult').textContent = bookData.originalTitle;
+    const cleanTitle = bookData.originalTitle.replace(/資訊不足/g, '').trim();
+    document.getElementById('bookTitleResult').textContent = cleanTitle;
     document.getElementById('bookAuthor').textContent = `作者：${bookData.author || '未知'}`;
     
     // 更新書籍摘要
@@ -458,7 +466,8 @@ function displayResults() {
     document.querySelector('.summary-section').style.display = 'block';
     
     // 更新書籍資訊
-    document.getElementById('bookTitleResult').textContent = bookData.originalTitle;
+    const cleanTitle = bookData.originalTitle.replace(/資訊不足/g, '').trim();
+    document.getElementById('bookTitleResult').textContent = cleanTitle;
     document.getElementById('bookAuthor').textContent = `作者：${bookData.author || '未知'}`;
     
     // 更新書籍摘要
@@ -669,7 +678,8 @@ function exportToMarkdown() {
         
         // 購書連結
         markdown += `## 🛒 購書連結\n`;
-        generatePurchaseLinks(bookData.originalTitle, bookData.author).forEach(link => {
+        const cleanExportTitle = bookData.originalTitle.replace(/資訊不足/g, '').trim();
+        generatePurchaseLinks(cleanExportTitle, bookData.author).forEach(link => {
             markdown += `- [${link.platform}](${link.url})\n`;
         });
         markdown += `\n`;
