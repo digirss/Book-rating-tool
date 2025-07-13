@@ -231,6 +231,7 @@ async function searchWithGeminiAI(bookTitle, inputAuthor) {
 - simpleExplanation：用十歲小朋友能理解的簡單語言解釋
 - 所有文字請使用繁體中文，簡潔明瞭
 - 只回傳 JSON，不要其他文字`;
+    }
 
     try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiSettings.apiKey}`, {
