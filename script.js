@@ -267,9 +267,14 @@ async function searchWithGeminiAI(bookTitle, inputAuthor, selectedPlatforms = []
         : `📋 查詢所有平台`;
 
     if (searchType === 'author_books') {
-        prompt = `請列出作者「${inputAuthor}」的主要著作及其評分資料（繁體中文回覆）：
+        prompt = `請模擬 Google 搜尋「${inputAuthor} 著作 書籍 評分」的行為，查詢該作者的真實著作及評分資料：
 
 ${platformsText}
+
+🔍 **搜尋策略**：
+1. 先確認作者「${inputAuthor}」確實存在
+2. 查詢其最著名的 3-5 本著作
+3. 參考 Google 搜尋結果中各平台的評分彙整
 
 請以 JSON 格式回傳該作者的多本書籍：
 {
@@ -287,21 +292,16 @@ ${platformsText}
                     "summary": "平台評價摘要（繁體中文，50字內）"
                 }
             ]
-        },
-        {
-            "title": "書名2",
-            "mainSummary": "...",
-            "simpleExplanation": "...",
-            "ratings": [...]
         }
     ]
 }
 
-注意事項：
-- 請確認作者名稱正確
-- 列出該作者最著名的 3-5 本書
-- ${selectedPlatforms.length > 0 ? `只查詢選定的平台：${selectedPlatforms.join('、')}` : '每本書都要有評分資料'}
-- 如果找不到該作者，請回傳空的 books 陣列`;
+📊 **資料準確性要求**：
+- 請確認作者名稱正確，基於真實存在的著作
+- ${selectedPlatforms.length > 0 ? `只查詢選定的平台：${selectedPlatforms.join('、')}` : '參考各平台真實評分資料'}
+- 如果某本書在特定平台找不到評分，請在 summary 中註明「未找到確切評分」
+- 如果找不到該作者，請回傳空的 books 陣列
+- 寧可提供較少但準確的書籍，也不要編造不存在的著作`;
 
     } else {
         let platformInstructions = '';
@@ -325,9 +325,23 @@ ${selectedPlatforms.map((p, i) => `${i + 1}. ${p}`).join('\n')}
 💡 平台名稱請統一使用：豆瓣讀書、Amazon Books、Goodreads、博客來、讀墨、Kobo`;
         }
 
-        prompt = `請查詢書籍「${searchQuery}」的詳細資訊和評分資料。
+        prompt = `請模擬 Google 搜尋「${searchQuery} 評分 評價」的行為，查詢真實的書籍評分資料。
+
+🔍 **搜尋策略**：
+1. 先確認書籍確實存在且資訊正確
+2. 查詢 Google 搜尋結果中各平台的評分彙整
+3. 參考搜尋結果片段中顯示的評分數據
 
 ${platformInstructions}
+
+💡 **評分資料來源**：
+請參考 Google 搜尋結果中通常顯示的平台評分格式：
+- 博客來：X.X/5星 (X個評價)
+- 讀墨：X.X/5星 (X個評價) 
+- Amazon：X.X/5星 (X個評價)
+- Goodreads：X.X/5星 (X個評價)
+- 豆瓣讀書：X.X/10分 (X個評價)
+- Kobo：X.X/5星 (X個評價)
 
 📋 回覆要求：
 - 所有內容必須使用繁體中文
@@ -371,16 +385,17 @@ ${platformInstructions}
     ]
 }
 
-🔍 重要注意事項：
-- 確保書籍資訊真實存在，不可編造虛假內容
-- 評分必須來自實際平台，不可虛構
-- 如果找不到評分，ratings 陣列設為空
-- 所有簡體中文內容必須轉換為繁體中文
-- 調整大陸用語為台灣用語（如：信息→資訊、软件→軟體）
-- **重要**：如果是翻譯書籍，請務必提供正確的英文原書名和作者英文名
-- titleEn 和 authorEn 對於 Amazon、Goodreads 等英文平台的搜尋非常重要
-- 如果是中文原創作品沒有英文版，titleEn 和 authorEn 可以留空
-- 只回傳 JSON，不要其他說明文字`;
+🔍 **資料準確性要求**：
+- 🎯 **優先查詢真實評分**：模擬實際 Google 搜尋，參考真實存在的評分數據
+- ✅ **確認書籍存在**：確保書籍資訊真實存在，不可編造虛假內容
+- 📊 **評分來源說明**：評分必須基於可能的真實平台數據
+- ⚠️ **找不到時誠實標註**：如果某平台確實找不到評分，請在該平台的 summary 中註明「未找到確切評分資料」
+- 🚫 **禁止完全虛構**：寧可留空也不要編造評分數字
+- 📝 **語言轉換**：所有簡體中文內容必須轉換為繁體中文
+- 🌍 **國際版本處理**：如果是翻譯書籍，請務必提供正確的英文原書名和作者英文名
+- 📋 **格式要求**：只回傳 JSON，不要其他說明文字
+
+**特別注意**：請基於 Google 搜尋結果中可能出現的真實評分資料，而非憑空創造數字`;
     }
 
     try {
