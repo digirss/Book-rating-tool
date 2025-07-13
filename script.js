@@ -217,6 +217,8 @@ async function searchWithGeminiAI(bookTitle, inputAuthor) {
 5. 讀墨 (Readmoo)
 6. Kobo
 
+💡 平台名稱請統一使用：豆瓣讀書、Amazon Books、Goodreads、博客來、讀墨、Kobo
+
 📋 回覆要求：
 - 所有內容必須使用繁體中文
 - 如果原始資料是簡體中文，請轉換為繁體中文並調整兩岸用語差異
@@ -243,7 +245,7 @@ async function searchWithGeminiAI(bookTitle, inputAuthor) {
     "dataSource": "AI生成內容，僅供參考",
     "ratings": [
         {
-            "platform": "豆瓣",
+            "platform": "豆瓣讀書",
             "rating": 7.8,
             "maxRating": 10,
             "summary": "平台評價摘要（繁體中文，50字內）"
@@ -372,8 +374,10 @@ function generateRatingPlatformUrl(platform, bookTitle, author = '') {
     
     switch (platform) {
         case '豆瓣':
+        case '豆瓣讀書':
             return `https://book.douban.com/subject_search?search_text=${encodedQuery}`;
         case 'Amazon':
+        case 'Amazon Books':
             return `https://www.amazon.com/s?k=${encodedQuery}&i=stripbooks`;
         case 'Goodreads':
             return `https://www.goodreads.com/search?q=${encodedQuery}`;
@@ -385,6 +389,7 @@ function generateRatingPlatformUrl(platform, bookTitle, author = '') {
         case 'Kobo':
             return `https://www.kobo.com/tw/zh/search?query=${encodedQuery}`;
         default:
+            console.log('未知平台:', platform);
             return '#';
     }
 }
