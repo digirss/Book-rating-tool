@@ -64,7 +64,7 @@ function updateModelInfo(modelName) {
             text: '⚡ <strong>Gemini 1.5 Pro</strong> 最高準確度，適合複雜查詢（付費）',
             class: 'info-premium'
         },
-        'gemini-2.0-flash-exp': {
+        'gemini-2.0-flash-thinking-exp': {
             text: '🔬 <strong>Gemini 2.0 Flash</strong> 最新實驗版本，功能強大',
             class: 'info-experimental'
         },
@@ -311,7 +311,11 @@ async function searchWithGeminiAI(bookTitle, inputAuthor) {
     }
 
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiSettings.apiKey}`, {
+        console.log(`正在使用模型: ${apiSettings.modelName}`);
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${apiSettings.modelName}:generateContent?key=${apiSettings.apiKey}`;
+        console.log(`API 調用 URL: ${apiUrl.replace(apiSettings.apiKey, '***')}`);
+        
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -332,7 +336,9 @@ async function searchWithGeminiAI(bookTitle, inputAuthor) {
         });
 
         if (!response.ok) {
-            throw new Error(`API 請求失敗: ${response.status} ${response.statusText}`);
+            const errorText = await response.text();
+            console.error(`API 錯誤詳情:`, errorText);
+            throw new Error(`API 請求失敗: ${response.status} ${response.statusText}. 可能是模型 "${apiSettings.modelName}" 不可用或API金鑰權限不足`);
         }
 
         const data = await response.json();
