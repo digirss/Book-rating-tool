@@ -407,7 +407,7 @@ function displayNoRatingsResults() {
     // 更新書籍資訊
     const cleanTitle = bookData.originalTitle.replace(/資訊不足/g, '').trim();
     document.getElementById('bookTitleResult').textContent = cleanTitle;
-    document.getElementById('bookAuthor').textContent = `作者：${bookData.author || '未知'}`;
+    document.getElementById('bookAuthorResult').textContent = `作者：${bookData.author || '未知'}`;
     
     // 更新書籍內容
     const mainIdealText = bookData.mainIdeal || '暫無核心理念';
@@ -481,7 +481,7 @@ function displayAuthorResults() {
     
     // 更新標題顯示為作者名稱
     document.getElementById('bookTitleResult').textContent = `${bookData.author} 的著作`;
-    document.getElementById('bookAuthor').textContent = `共找到 ${bookData.books.length} 本書籍`;
+    document.getElementById('bookAuthorResult').textContent = `共找到 ${bookData.books.length} 本書籍`;
     
     // 隱藏單本書的摘要區域
     document.querySelector('.book-summary').style.display = 'none';
@@ -514,7 +514,7 @@ function displayResults() {
     // 更新書籍資訊
     const cleanTitle = bookData.originalTitle.replace(/資訊不足/g, '').trim();
     document.getElementById('bookTitleResult').textContent = cleanTitle;
-    document.getElementById('bookAuthor').textContent = `作者：${bookData.author || '未知'}`;
+    document.getElementById('bookAuthorResult').textContent = `作者：${bookData.author || '未知'}`;
     
     // 更新書籍內容
     const mainIdealText = bookData.mainIdeal || '暫無核心理念';
