@@ -122,7 +122,6 @@ async function searchAllPlatforms(originalTitle, simplifiedTitle, inputAuthor) {
                 bookData.author = result.author || '未知';
                 bookData.mainSummary = result.mainSummary || '';
                 bookData.simpleExplanation = result.simpleExplanation || '';
-                bookData.purchaseLinks = result.purchaseLinks || [];
                 bookData.dataSource = result.dataSource || 'AI生成內容，僅供參考';
                 return;
             }
@@ -132,7 +131,6 @@ async function searchAllPlatforms(originalTitle, simplifiedTitle, inputAuthor) {
                 bookData.author = result.author;
                 bookData.mainSummary = result.mainSummary || '';
                 bookData.simpleExplanation = result.simpleExplanation || '';
-                bookData.purchaseLinks = result.purchaseLinks || [];
                 bookData.dataSource = result.dataSource || 'AI生成內容，僅供參考';
                 return;
             }
@@ -229,25 +227,15 @@ async function searchWithGeminiAI(bookTitle, inputAuthor) {
             "summary": "平台評價摘要（繁體中文，50字內）"
         }
     ],
-    "purchaseLinks": [
-        {
-            "platform": "博客來",
-            "url": "https://www.books.com.tw/"
-        },
-        {
-            "platform": "Amazon",
-            "url": "https://www.amazon.com/"
-        }
-    ]
 }
 
 ⚠️ 重要注意事項：
 - 只能提供確實存在的書籍資訊，絕對不可編造虛假內容
 - 如果不確定書籍是否存在，請在 mainSummary 中註明「AI 無法確認此書籍的詳細資訊」
 - 即使沒有評分資料，也要提供書籍基本資訊（title, author, mainSummary, simpleExplanation）
-- 如果找不到評分，ratings 陣列設為空，但要提供通用 purchaseLinks
+- 如果找不到評分，ratings 陣列設為空
 - 評分請使用該平台的實際評分制度，不可編造假評分
-- purchaseLinks：只提供平台首頁連結，不可提供虛假的具體商品連結
+- 不需要提供 purchaseLinks，系統會自動生成購書連結
 - mainSummary：必須基於真實內容，不可編造書籍內容
 - simpleExplanation：基於真實內容的簡化說明
 - 如果無法找到可靠資訊，請誠實說明「資訊不足」
@@ -322,6 +310,31 @@ function normalizeRating(rating, maxRating) {
     return (rating / maxRating) * 10;
 }
 
+// 生成購買連結，將書名帶入搜尋 URL
+function generatePurchaseLinks(bookTitle, author = '') {
+    const searchQuery = author ? `${bookTitle} ${author}` : bookTitle;
+    const encodedQuery = encodeURIComponent(searchQuery);
+    
+    return [
+        {
+            platform: "博客來",
+            url: `https://search.books.com.tw/search/query/key/${encodedQuery}/cat/all`
+        },
+        {
+            platform: "Amazon",
+            url: `https://www.amazon.com/s?k=${encodedQuery}&i=stripbooks`
+        },
+        {
+            platform: "誠品",
+            url: `https://www.eslite.com/search?query=${encodedQuery}`
+        },
+        {
+            platform: "讀墨",
+            url: `https://readmoo.com/search/keyword?q=${encodedQuery}`
+        }
+    ];
+}
+
 // 計算平均分數和推薦語
 function calculateAverageAndRecommendation() {
     if (bookData.ratings.length === 0) {
@@ -380,18 +393,16 @@ function displayNoRatingsResults() {
                 <p>很抱歉，暫時找不到這本書在各大評分平台的資料。</p>
             </div>
             
-            ${bookData.purchaseLinks && bookData.purchaseLinks.length > 0 ? `
             <div class="purchase-links">
                 <h4>🛒 購書連結</h4>
                 <div class="links-container">
-                    ${bookData.purchaseLinks.map(link => `
+                    ${generatePurchaseLinks(bookData.originalTitle, bookData.author).map(link => `
                         <a href="${link.url}" target="_blank" class="purchase-link">
                             ${link.platform}
                         </a>
                     `).join('')}
                 </div>
             </div>
-            ` : ''}
             
             <div class="suggestion">
                 <p>💡 建議：您可以嘗試直接到各大購書網站搜尋，或等待更多評分資料上線。</p>
@@ -651,13 +662,11 @@ function exportToMarkdown() {
         markdown += `很抱歉，暫時找不到這本書在各大評分平台的資料。\n\n`;
         
         // 購書連結
-        if (bookData.purchaseLinks && bookData.purchaseLinks.length > 0) {
-            markdown += `## 🛒 購書連結\n`;
-            bookData.purchaseLinks.forEach(link => {
-                markdown += `- [${link.platform}](${link.url})\n`;
-            });
-            markdown += `\n`;
-        }
+        markdown += `## 🛒 購書連結\n`;
+        generatePurchaseLinks(bookData.originalTitle, bookData.author).forEach(link => {
+            markdown += `- [${link.platform}](${link.url})\n`;
+        });
+        markdown += `\n`;
         
         markdown += `## 💡 建議\n`;
         markdown += `您可以嘗試直接到各大購書網站搜尋，或等待更多評分資料上線。\n`;
