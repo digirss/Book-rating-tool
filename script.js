@@ -113,6 +113,7 @@ async function searchAllPlatforms(originalTitle, simplifiedTitle, inputAuthor) {
                 bookData.isAuthorSearch = true;
                 bookData.author = result.author || inputAuthor;
                 bookData.books = result.books;
+                bookData.dataSource = result.dataSource || 'AI生成內容，僅供參考';
                 return;
             }
             // 處理單本書籍（有評分）
@@ -122,6 +123,7 @@ async function searchAllPlatforms(originalTitle, simplifiedTitle, inputAuthor) {
                 bookData.mainSummary = result.mainSummary || '';
                 bookData.simpleExplanation = result.simpleExplanation || '';
                 bookData.purchaseLinks = result.purchaseLinks || [];
+                bookData.dataSource = result.dataSource || 'AI生成內容，僅供參考';
                 return;
             }
             // 處理找到書籍但無評分的情況
@@ -131,6 +133,7 @@ async function searchAllPlatforms(originalTitle, simplifiedTitle, inputAuthor) {
                 bookData.mainSummary = result.mainSummary || '';
                 bookData.simpleExplanation = result.simpleExplanation || '';
                 bookData.purchaseLinks = result.purchaseLinks || [];
+                bookData.dataSource = result.dataSource || 'AI生成內容，僅供參考';
                 return;
             }
         }
@@ -217,6 +220,7 @@ async function searchWithGeminiAI(bookTitle, inputAuthor) {
     "author": "作者",
     "mainSummary": "書籍主旨摘要（繁體中文，100字內，說明這本書的核心內容和主要觀點）",
     "simpleExplanation": "用一句話總結給十歲小朋友看（繁體中文，30字內，用簡單易懂的語言）",
+    "dataSource": "AI生成內容，僅供參考",
     "ratings": [
         {
             "platform": "豆瓣",
@@ -228,24 +232,25 @@ async function searchWithGeminiAI(bookTitle, inputAuthor) {
     "purchaseLinks": [
         {
             "platform": "博客來",
-            "url": "https://www.books.com.tw/products/xxxxx"
+            "url": "https://www.books.com.tw/"
         },
         {
             "platform": "Amazon",
-            "url": "https://amazon.com/xxxxx"
+            "url": "https://www.amazon.com/"
         }
     ]
 }
 
-注意事項：
-- 請務必核對書名和作者是否正確匹配
+⚠️ 重要注意事項：
+- 只能提供確實存在的書籍資訊，絕對不可編造虛假內容
+- 如果不確定書籍是否存在，請在 mainSummary 中註明「AI 無法確認此書籍的詳細資訊」
 - 即使沒有評分資料，也要提供書籍基本資訊（title, author, mainSummary, simpleExplanation）
-- 如果找不到評分，ratings 陣列可以為空，但要提供 purchaseLinks
-- 如果某平台沒有該書籍，請跳過
-- 評分請使用該平台的實際評分制度
-- purchaseLinks：提供主要購書平台連結（博客來、Amazon、誠品等）
-- mainSummary：說明書籍的核心內容、主要觀點和價值
-- simpleExplanation：用十歲小朋友能理解的簡單語言解釋
+- 如果找不到評分，ratings 陣列設為空，但要提供通用 purchaseLinks
+- 評分請使用該平台的實際評分制度，不可編造假評分
+- purchaseLinks：只提供平台首頁連結，不可提供虛假的具體商品連結
+- mainSummary：必須基於真實內容，不可編造書籍內容
+- simpleExplanation：基於真實內容的簡化說明
+- 如果無法找到可靠資訊，請誠實說明「資訊不足」
 - 所有文字請使用繁體中文，簡潔明瞭
 - 只回傳 JSON，不要其他文字`;
     }
@@ -361,7 +366,9 @@ function displayNoRatingsResults() {
     document.getElementById('bookAuthor').textContent = `作者：${bookData.author || '未知'}`;
     
     // 更新書籍摘要
-    document.getElementById('mainSummary').textContent = bookData.mainSummary || '暫無摘要';
+    const mainSummaryText = bookData.mainSummary || '暫無摘要';
+    const dataSourceWarning = bookData.dataSource ? `\n\n⚠️ ${bookData.dataSource}` : '';
+    document.getElementById('mainSummary').textContent = mainSummaryText + dataSourceWarning;
     document.getElementById('simpleExplanation').textContent = bookData.simpleExplanation || '暫無簡易說明';
     
     // 顯示無評分提示和購買連結
@@ -438,7 +445,9 @@ function displayResults() {
     document.getElementById('bookAuthor').textContent = `作者：${bookData.author || '未知'}`;
     
     // 更新書籍摘要
-    document.getElementById('mainSummary').textContent = bookData.mainSummary || '暫無摘要';
+    const mainSummaryText = bookData.mainSummary || '暫無摘要';
+    const dataSourceWarning = bookData.dataSource ? `\n\n⚠️ ${bookData.dataSource}` : '';
+    document.getElementById('mainSummary').textContent = mainSummaryText + dataSourceWarning;
     document.getElementById('simpleExplanation').textContent = bookData.simpleExplanation || '暫無簡易說明';
     
     // 更新平台評分
