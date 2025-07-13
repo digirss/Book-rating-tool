@@ -444,14 +444,38 @@ ${platformInstructions}
 
         // 處理不同模型的回應格式
         let aiResponse;
-        if (data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
-            aiResponse = data.candidates[0].content.parts[0].text;
-        } else if (data.candidates[0].content.text) {
-            aiResponse = data.candidates[0].content.text;
+        const content = data.candidates[0].content;
+        
+        // 詳細記錄回應結構以便調試
+        console.log('回應 content 結構:', content);
+        
+        if (content.parts && content.parts[0] && content.parts[0].text) {
+            aiResponse = content.parts[0].text;
+        } else if (content.text) {
+            aiResponse = content.text;
+        } else if (content.role === 'model' && content.parts && content.parts[0] && content.parts[0].text) {
+            // 處理新格式：{role: "model", parts: [...]}
+            aiResponse = content.parts[0].text;
         } else {
-            console.error('無法解析 AI 回應內容:', data.candidates[0].content);
-            throw new Error('無法解析 AI 回應內容格式');
+            // 嘗試其他可能的格式
+            const possibleText = content.parts?.[0]?.text || 
+                                content.message?.content || 
+                                content.output || 
+                                content.response;
+            
+            if (possibleText) {
+                aiResponse = possibleText;
+                console.log('使用備用格式解析成功');
+            } else {
+                console.error('無法解析 AI 回應內容:', content);
+                console.error('完整 candidates 結構:', data.candidates[0]);
+                console.error('可用屬性:', Object.keys(content));
+                throw new Error('無法解析 AI 回應內容格式');
+            }
         }
+        
+        console.log('AI 回應內容長度:', aiResponse?.length || 0);
+        console.log('AI 回應前100字:', aiResponse?.substring(0, 100) || '無內容');
         
         // 嘗試解析 JSON
         try {
