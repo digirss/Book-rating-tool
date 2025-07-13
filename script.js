@@ -312,7 +312,9 @@ function normalizeRating(rating, maxRating) {
 
 // 生成購買連結，將書名帶入搜尋 URL
 function generatePurchaseLinks(bookTitle, author = '') {
-    const searchQuery = author ? `${bookTitle} ${author}` : bookTitle;
+    // 清理書名，移除不必要的文字
+    let cleanTitle = bookTitle.replace(/資訊不足/g, '').trim();
+    const searchQuery = author ? `${cleanTitle} ${author}` : cleanTitle;
     const encodedQuery = encodeURIComponent(searchQuery);
     
     return [
@@ -331,6 +333,10 @@ function generatePurchaseLinks(bookTitle, author = '') {
         {
             platform: "讀墨",
             url: `https://readmoo.com/search/keyword?q=${encodedQuery}`
+        },
+        {
+            platform: "Kobo",
+            url: `https://www.kobo.com/tw/zh/search?query=${encodedQuery}`
         }
     ];
 }
