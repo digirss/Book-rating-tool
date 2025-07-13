@@ -120,7 +120,9 @@ async function searchAllPlatforms(originalTitle, simplifiedTitle, inputAuthor) {
             else if (result.ratings && result.ratings.length > 0) {
                 bookData.ratings = result.ratings;
                 bookData.author = result.author || '未知';
-                bookData.mainSummary = result.mainSummary || '';
+                bookData.mainIdeal = result.mainIdeal || '';
+                bookData.summaries = result.summaries || [];
+                bookData.keyQuestions = result.keyQuestions || [];
                 bookData.simpleExplanation = result.simpleExplanation || '';
                 bookData.dataSource = result.dataSource || 'AI生成內容，僅供參考';
                 return;
@@ -129,7 +131,9 @@ async function searchAllPlatforms(originalTitle, simplifiedTitle, inputAuthor) {
             else if (result.title && result.author) {
                 bookData.noRatings = true;
                 bookData.author = result.author;
-                bookData.mainSummary = result.mainSummary || '';
+                bookData.mainIdeal = result.mainIdeal || '';
+                bookData.summaries = result.summaries || [];
+                bookData.keyQuestions = result.keyQuestions || [];
                 bookData.simpleExplanation = result.simpleExplanation || '';
                 bookData.dataSource = result.dataSource || 'AI生成內容，僅供參考';
                 return;
@@ -200,24 +204,42 @@ async function searchWithGeminiAI(bookTitle, inputAuthor) {
 - 如果找不到該作者，請回傳空的 books 陣列`;
 
     } else {
-        prompt = `請查詢書籍「${searchQuery}」在以下平台的評分和簡短摘要（繁體中文回覆）：
+        prompt = `請查詢書籍「${searchQuery}」的詳細資訊和評分資料。
 
-主要平台（優先查詢）：
+⭐ 查詢平台優先順序：
+【主要平台】（優先查詢）：
 1. 豆瓣讀書
 2. Amazon Books  
 3. Goodreads
 
-備用平台（如果主要平台找不到）：
+【備用平台】（主要平台找不到時才查詢）：
 4. 博客來
 5. 讀墨 (Readmoo)
 6. Kobo
 
-請以 JSON 格式回傳，格式如下：
+📋 回覆要求：
+- 所有內容必須使用繁體中文
+- 如果原始資料是簡體中文，請轉換為繁體中文並調整兩岸用語差異
+- 例如：软件→軟體、网络→網路、信息→資訊、计算机→電腦
+
+請以 JSON 格式回傳：
 {
-    "title": "書名",
-    "author": "作者",
-    "mainSummary": "書籍主旨摘要（繁體中文，100字內，說明這本書的核心內容和主要觀點）",
-    "simpleExplanation": "用一句話總結給十歲小朋友看（繁體中文，30字內，用簡單易懂的語言）",
+    "title": "書名（繁體中文）",
+    "author": "作者（繁體中文）",
+    "mainIdeal": "書籍核心理念（繁體中文，100字內，說明這本書的核心思想和主要價值）",
+    "summaries": [
+        "摘要1：重點概念（50字內）",
+        "摘要2：實用方法（50字內）",
+        "摘要3：案例分析（50字內）",
+        "摘要4：深度見解（50字內）",
+        "摘要5：實踐應用（50字內）"
+    ],
+    "keyQuestions": [
+        "這本書想解決什麼問題？",
+        "作者提出了哪些創新觀點？",
+        "讀者可以從中獲得什麼實用知識？"
+    ],
+    "simpleExplanation": "一句話總結給十歲小朋友看（繁體中文，30字內）",
     "dataSource": "AI生成內容，僅供參考",
     "ratings": [
         {
@@ -226,21 +248,16 @@ async function searchWithGeminiAI(bookTitle, inputAuthor) {
             "maxRating": 10,
             "summary": "平台評價摘要（繁體中文，50字內）"
         }
-    ],
+    ]
 }
 
-⚠️ 重要注意事項：
-- 只能提供確實存在的書籍資訊，絕對不可編造虛假內容
-- 如果不確定書籍是否存在，請在 mainSummary 中註明「AI 無法確認此書籍的詳細資訊」
-- 即使沒有評分資料，也要提供書籍基本資訊（title, author, mainSummary, simpleExplanation）
+🔍 重要注意事項：
+- 確保書籍資訊真實存在，不可編造虛假內容
+- 評分必須來自實際平台，不可虛構
 - 如果找不到評分，ratings 陣列設為空
-- 評分請使用該平台的實際評分制度，不可編造假評分
-- 不需要提供 purchaseLinks，系統會自動生成購書連結
-- mainSummary：必須基於真實內容，不可編造書籍內容
-- simpleExplanation：基於真實內容的簡化說明
-- 如果無法找到可靠資訊，請誠實說明「資訊不足」
-- 所有文字請使用繁體中文，簡潔明瞭
-- 只回傳 JSON，不要其他文字`;
+- 所有簡體中文內容必須轉換為繁體中文
+- 調整大陸用語為台灣用語（如：信息→資訊、软件→軟體）
+- 只回傳 JSON，不要其他說明文字`;
     }
 
     try {
@@ -324,10 +341,6 @@ function generatePurchaseLinks(bookTitle, author = '') {
     const searchQuery = cleanAuthor ? `${cleanTitle} ${cleanAuthor}` : cleanTitle;
     const encodedQuery = encodeURIComponent(searchQuery);
     
-    // 除錯用：顯示編碼結果
-    console.log('原始查詢:', searchQuery);
-    console.log('編碼後查詢:', encodedQuery);
-    
     return [
         {
             platform: "博客來",
@@ -396,10 +409,39 @@ function displayNoRatingsResults() {
     document.getElementById('bookTitleResult').textContent = cleanTitle;
     document.getElementById('bookAuthor').textContent = `作者：${bookData.author || '未知'}`;
     
-    // 更新書籍摘要
-    const mainSummaryText = bookData.mainSummary || '暫無摘要';
+    // 更新書籍內容
+    const mainIdealText = bookData.mainIdeal || '暫無核心理念';
     const dataSourceWarning = bookData.dataSource ? `\n\n⚠️ ${bookData.dataSource}` : '';
-    document.getElementById('mainSummary').textContent = mainSummaryText + dataSourceWarning;
+    document.getElementById('mainIdeal').textContent = mainIdealText + dataSourceWarning;
+    
+    // 更新五大摘要
+    const summariesContainer = document.getElementById('summaries');
+    summariesContainer.innerHTML = '';
+    if (bookData.summaries && bookData.summaries.length > 0) {
+        bookData.summaries.forEach(summary => {
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'summary-item';
+            summaryDiv.textContent = summary;
+            summariesContainer.appendChild(summaryDiv);
+        });
+    } else {
+        summariesContainer.innerHTML = '<div class="summary-item">暫無詳細摘要</div>';
+    }
+    
+    // 更新核心問題
+    const questionsContainer = document.getElementById('keyQuestions');
+    questionsContainer.innerHTML = '';
+    if (bookData.keyQuestions && bookData.keyQuestions.length > 0) {
+        bookData.keyQuestions.forEach(question => {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-item';
+            questionDiv.textContent = question;
+            questionsContainer.appendChild(questionDiv);
+        });
+    } else {
+        questionsContainer.innerHTML = '<div class="question-item">暫無核心問題</div>';
+    }
+    
     document.getElementById('simpleExplanation').textContent = bookData.simpleExplanation || '暫無簡易說明';
     
     // 顯示無評分提示和購買連結
@@ -474,10 +516,39 @@ function displayResults() {
     document.getElementById('bookTitleResult').textContent = cleanTitle;
     document.getElementById('bookAuthor').textContent = `作者：${bookData.author || '未知'}`;
     
-    // 更新書籍摘要
-    const mainSummaryText = bookData.mainSummary || '暫無摘要';
+    // 更新書籍內容
+    const mainIdealText = bookData.mainIdeal || '暫無核心理念';
     const dataSourceWarning = bookData.dataSource ? `\n\n⚠️ ${bookData.dataSource}` : '';
-    document.getElementById('mainSummary').textContent = mainSummaryText + dataSourceWarning;
+    document.getElementById('mainIdeal').textContent = mainIdealText + dataSourceWarning;
+    
+    // 更新五大摘要
+    const summariesContainer = document.getElementById('summaries');
+    summariesContainer.innerHTML = '';
+    if (bookData.summaries && bookData.summaries.length > 0) {
+        bookData.summaries.forEach(summary => {
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'summary-item';
+            summaryDiv.textContent = summary;
+            summariesContainer.appendChild(summaryDiv);
+        });
+    } else {
+        summariesContainer.innerHTML = '<div class="summary-item">暫無詳細摘要</div>';
+    }
+    
+    // 更新核心問題
+    const questionsContainer = document.getElementById('keyQuestions');
+    questionsContainer.innerHTML = '';
+    if (bookData.keyQuestions && bookData.keyQuestions.length > 0) {
+        bookData.keyQuestions.forEach(question => {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-item';
+            questionDiv.textContent = question;
+            questionsContainer.appendChild(questionDiv);
+        });
+    } else {
+        questionsContainer.innerHTML = '<div class="question-item">暫無核心問題</div>';
+    }
+    
     document.getElementById('simpleExplanation').textContent = bookData.simpleExplanation || '暫無簡易說明';
     
     // 更新平台評分
@@ -629,10 +700,28 @@ function exportToMarkdown() {
         markdown = `# 書名：${bookData.originalTitle}\n`;
         markdown += `## 作者：${bookData.author || '未知'}\n\n`;
         
-        // 書籍摘要
-        if (bookData.mainSummary) {
-            markdown += `## 📖 書籍摘要\n`;
-            markdown += `${bookData.mainSummary}\n\n`;
+        // 核心理念
+        if (bookData.mainIdeal) {
+            markdown += `## 💡 核心理念\n`;
+            markdown += `${bookData.mainIdeal}\n\n`;
+        }
+        
+        // 五大重點摘要
+        if (bookData.summaries && bookData.summaries.length > 0) {
+            markdown += `## 📋 五大重點摘要\n`;
+            bookData.summaries.forEach((summary, index) => {
+                markdown += `${index + 1}. ${summary}\n`;
+            });
+            markdown += `\n`;
+        }
+        
+        // 核心問題探討
+        if (bookData.keyQuestions && bookData.keyQuestions.length > 0) {
+            markdown += `## ❓ 核心問題探討\n`;
+            bookData.keyQuestions.forEach((question, index) => {
+                markdown += `Q${index + 1}: ${question}\n`;
+            });
+            markdown += `\n`;
         }
         
         // 簡易說明
@@ -664,10 +753,28 @@ function exportToMarkdown() {
         markdown = `# 書名：${bookData.originalTitle}\n`;
         markdown += `## 作者：${bookData.author || '未知'}\n\n`;
         
-        // 書籍摘要
-        if (bookData.mainSummary) {
-            markdown += `## 📖 書籍摘要\n`;
-            markdown += `${bookData.mainSummary}\n\n`;
+        // 核心理念
+        if (bookData.mainIdeal) {
+            markdown += `## 💡 核心理念\n`;
+            markdown += `${bookData.mainIdeal}\n\n`;
+        }
+        
+        // 五大重點摘要
+        if (bookData.summaries && bookData.summaries.length > 0) {
+            markdown += `## 📋 五大重點摘要\n`;
+            bookData.summaries.forEach((summary, index) => {
+                markdown += `${index + 1}. ${summary}\n`;
+            });
+            markdown += `\n`;
+        }
+        
+        // 核心問題探討
+        if (bookData.keyQuestions && bookData.keyQuestions.length > 0) {
+            markdown += `## ❓ 核心問題探討\n`;
+            bookData.keyQuestions.forEach((question, index) => {
+                markdown += `Q${index + 1}: ${question}\n`;
+            });
+            markdown += `\n`;
         }
         
         // 簡易說明

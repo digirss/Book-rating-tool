@@ -266,7 +266,7 @@ main {
     margin-bottom: 30px;
 }
 
-.main-summary, .simple-explanation {
+.main-ideal, .summaries-section, .questions-section, .simple-explanation {
     background: white;
     border: 2px solid #e1e5e9;
     border-radius: 15px;
@@ -275,8 +275,16 @@ main {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.main-summary {
+.main-ideal {
     border-left: 4px solid #667eea;
+}
+
+.summaries-section {
+    border-left: 4px solid #28a745;
+}
+
+.questions-section {
+    border-left: 4px solid #ffc107;
 }
 
 .simple-explanation {
@@ -284,13 +292,13 @@ main {
     background: linear-gradient(135deg, #fff5fd 0%, #fff 100%);
 }
 
-.main-summary h3, .simple-explanation h3 {
+.main-ideal h3, .summaries-section h3, .questions-section h3, .simple-explanation h3 {
     color: #333;
-    margin: 0 0 10px 0;
+    margin: 0 0 15px 0;
     font-size: 1.1rem;
 }
 
-.main-summary p, .simple-explanation p {
+.main-ideal p, .simple-explanation p {
     color: #555;
     line-height: 1.6;
     margin: 0;
@@ -301,6 +309,51 @@ main {
     font-size: 1rem;
     font-weight: 500;
     color: #d63384;
+}
+
+/* Summaries list */
+.summaries-list {
+    display: grid;
+    gap: 10px;
+}
+
+.summary-item {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px 15px;
+    border-left: 3px solid #28a745;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #555;
+}
+
+.summary-item:before {
+    content: "▸ ";
+    color: #28a745;
+    font-weight: bold;
+}
+
+/* Questions list */
+.questions-list {
+    display: grid;
+    gap: 10px;
+}
+
+.question-item {
+    background: #fff8e6;
+    border-radius: 8px;
+    padding: 12px 15px;
+    border-left: 3px solid #ffc107;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #555;
+    font-weight: 500;
+}
+
+.question-item:before {
+    content: "Q: ";
+    color: #ffc107;
+    font-weight: bold;
 }
 
 /* Platform ratings */
