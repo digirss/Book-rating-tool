@@ -545,44 +545,119 @@ function createAuthorBookCard(book) {
 
 // 匯出 Markdown
 function exportToMarkdown() {
-    if (!bookData.ratings || bookData.ratings.length === 0) {
+    if (!bookData.originalTitle && !bookData.books) {
         alert('沒有資料可匯出');
         return;
     }
     
-    let markdown = `# 書名：${bookData.originalTitle}\n`;
-    markdown += `## 作者：${bookData.author || '未知'}\n\n`;
+    let markdown = '';
+    let filename = '';
     
-    // 書籍摘要
-    if (bookData.mainSummary) {
-        markdown += `## 📖 書籍摘要\n`;
-        markdown += `${bookData.mainSummary}\n\n`;
-    }
-    
-    // 簡易說明
-    if (bookData.simpleExplanation) {
-        markdown += `## 👶 給小朋友看\n`;
-        markdown += `${bookData.simpleExplanation}\n\n`;
-    }
-    
-    markdown += `---\n\n`;
-    
-    // 各平台評分
-    bookData.ratings.forEach(rating => {
-        const ratingDisplay = rating.maxRating === 10 
-            ? `${rating.rating} / 10`
-            : `${rating.rating} / ${rating.maxRating} → ${rating.normalizedRating.toFixed(1)} / 10`;
+    // 處理作者著作列表
+    if (bookData.isAuthorSearch && bookData.books) {
+        markdown = `# ${bookData.author} 的著作列表\n\n`;
         
-        markdown += `### ${rating.platform} 評分：${ratingDisplay}\n`;
-        markdown += `評價：${rating.summary}\n\n`;
-    });
-    
-    markdown += `---\n\n`;
-    markdown += `### 平均評分：${bookData.averageScore} / 10\n`;
-    markdown += `### 推薦程度：${bookData.recommendation}\n`;
+        bookData.books.forEach((book, index) => {
+            markdown += `## ${index + 1}. ${book.title}\n\n`;
+            
+            if (book.mainSummary) {
+                markdown += `### 📖 書籍摘要\n${book.mainSummary}\n\n`;
+            }
+            
+            if (book.simpleExplanation) {
+                markdown += `### 👶 給小朋友看\n${book.simpleExplanation}\n\n`;
+            }
+            
+            if (book.ratings && book.ratings.length > 0) {
+                markdown += `### 評分資料\n`;
+                book.ratings.forEach(rating => {
+                    const ratingDisplay = rating.maxRating === 10 
+                        ? `${rating.rating} / 10`
+                        : `${rating.rating} / ${rating.maxRating} → ${((rating.rating / rating.maxRating) * 10).toFixed(1)} / 10`;
+                    
+                    markdown += `- **${rating.platform}**：${ratingDisplay} - ${rating.summary}\n`;
+                });
+                markdown += `\n`;
+            }
+            
+            markdown += `---\n\n`;
+        });
+        
+        filename = `${bookData.author}_著作列表.md`;
+    }
+    // 處理單本書籍（有評分）
+    else if (bookData.ratings && bookData.ratings.length > 0) {
+        markdown = `# 書名：${bookData.originalTitle}\n`;
+        markdown += `## 作者：${bookData.author || '未知'}\n\n`;
+        
+        // 書籍摘要
+        if (bookData.mainSummary) {
+            markdown += `## 📖 書籍摘要\n`;
+            markdown += `${bookData.mainSummary}\n\n`;
+        }
+        
+        // 簡易說明
+        if (bookData.simpleExplanation) {
+            markdown += `## 👶 給小朋友看\n`;
+            markdown += `${bookData.simpleExplanation}\n\n`;
+        }
+        
+        markdown += `---\n\n`;
+        
+        // 各平台評分
+        bookData.ratings.forEach(rating => {
+            const ratingDisplay = rating.maxRating === 10 
+                ? `${rating.rating} / 10`
+                : `${rating.rating} / ${rating.maxRating} → ${rating.normalizedRating.toFixed(1)} / 10`;
+            
+            markdown += `### ${rating.platform} 評分：${ratingDisplay}\n`;
+            markdown += `評價：${rating.summary}\n\n`;
+        });
+        
+        markdown += `---\n\n`;
+        markdown += `### 平均評分：${bookData.averageScore} / 10\n`;
+        markdown += `### 推薦程度：${bookData.recommendation}\n`;
+        
+        filename = `${bookData.originalTitle}_評分報告.md`;
+    }
+    // 處理無評分書籍
+    else {
+        markdown = `# 書名：${bookData.originalTitle}\n`;
+        markdown += `## 作者：${bookData.author || '未知'}\n\n`;
+        
+        // 書籍摘要
+        if (bookData.mainSummary) {
+            markdown += `## 📖 書籍摘要\n`;
+            markdown += `${bookData.mainSummary}\n\n`;
+        }
+        
+        // 簡易說明
+        if (bookData.simpleExplanation) {
+            markdown += `## 👶 給小朋友看\n`;
+            markdown += `${bookData.simpleExplanation}\n\n`;
+        }
+        
+        markdown += `---\n\n`;
+        markdown += `## 📊 評分資訊\n`;
+        markdown += `很抱歉，暫時找不到這本書在各大評分平台的資料。\n\n`;
+        
+        // 購書連結
+        if (bookData.purchaseLinks && bookData.purchaseLinks.length > 0) {
+            markdown += `## 🛒 購書連結\n`;
+            bookData.purchaseLinks.forEach(link => {
+                markdown += `- [${link.platform}](${link.url})\n`;
+            });
+            markdown += `\n`;
+        }
+        
+        markdown += `## 💡 建議\n`;
+        markdown += `您可以嘗試直接到各大購書網站搜尋，或等待更多評分資料上線。\n`;
+        
+        filename = `${bookData.originalTitle}_書籍資訊.md`;
+    }
     
     // 下載檔案
-    downloadMarkdown(markdown, `${bookData.originalTitle}_評分報告.md`);
+    downloadMarkdown(markdown, filename);
 }
 
 // 下載 Markdown 檔案
