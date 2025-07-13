@@ -31,6 +31,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('modelName').addEventListener('change', function(e) {
         updateModelInfo(e.target.value);
     });
+    
+    // 初始化平台選擇功能
+    initializePlatformSelection();
 });
 
 // 簡單的繁簡轉換（基本字符對應）
@@ -50,6 +53,73 @@ function convertToSimplified(text) {
         result = result.replace(new RegExp(trad, 'g'), simp);
     }
     return result;
+}
+
+// 初始化平台選擇功能
+function initializePlatformSelection() {
+    const checkboxes = document.querySelectorAll('.platform-checkbox input[type="checkbox"]');
+    const platformCount = document.getElementById('platformCount');
+    
+    // 綁定複選框變更事件
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updatePlatformSelection();
+        });
+    });
+    
+    // 初始化計數
+    updatePlatformSelection();
+}
+
+// 更新平台選擇狀態
+function updatePlatformSelection() {
+    const checkboxes = document.querySelectorAll('.platform-checkbox input[type="checkbox"]');
+    const platformCount = document.getElementById('platformCount');
+    const checkedBoxes = document.querySelectorAll('.platform-checkbox input[type="checkbox"]:checked');
+    
+    // 更新計數顯示
+    platformCount.textContent = `已選擇 ${checkedBoxes.length} 個平台`;
+    
+    // 檢查是否達到最大選擇數量（3個）
+    if (checkedBoxes.length >= 3) {
+        // 禁用未選中的複選框
+        checkboxes.forEach(checkbox => {
+            if (!checkbox.checked) {
+                checkbox.disabled = true;
+                checkbox.parentElement.classList.add('disabled');
+            }
+        });
+        platformCount.style.color = '#ffc107';
+        platformCount.textContent = `已選擇 ${checkedBoxes.length} 個平台（最多3個）`;
+    } else {
+        // 啟用所有複選框
+        checkboxes.forEach(checkbox => {
+            checkbox.disabled = false;
+            checkbox.parentElement.classList.remove('disabled');
+        });
+        platformCount.style.color = '#667eea';
+    }
+    
+    // 更新複選框外觀
+    checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+            checkbox.parentElement.classList.add('checked');
+        } else {
+            checkbox.parentElement.classList.remove('checked');
+        }
+    });
+    
+    // 檢查是否至少選擇一個平台
+    if (checkedBoxes.length === 0) {
+        platformCount.style.color = '#dc3545';
+        platformCount.textContent = '請至少選擇一個平台';
+    }
+}
+
+// 獲取選中的平台列表
+function getSelectedPlatforms() {
+    const checkedBoxes = document.querySelectorAll('.platform-checkbox input[type="checkbox"]:checked');
+    return Array.from(checkedBoxes).map(checkbox => checkbox.value);
 }
 
 // 更新模型資訊顯示
@@ -84,9 +154,15 @@ function updateModelInfo(modelName) {
 async function searchBook() {
     const bookTitle = document.getElementById('bookTitle').value.trim();
     const bookAuthor = document.getElementById('bookAuthor').value.trim();
+    const selectedPlatforms = getSelectedPlatforms();
     
     if (!bookTitle && !bookAuthor) {
         alert('請至少輸入書名或作者');
+        return;
+    }
+    
+    if (selectedPlatforms.length === 0) {
+        alert('請至少選擇一個查詢平台');
         return;
     }
     
@@ -107,7 +183,7 @@ async function searchBook() {
         };
         
         // 依序查詢各平台
-        await searchAllPlatforms(bookTitle, simplifiedTitle, bookAuthor);
+        await searchAllPlatforms(bookTitle, simplifiedTitle, bookAuthor, selectedPlatforms);
         
         // 處理結果顯示
         if (bookData.isAuthorSearch) {
@@ -132,13 +208,13 @@ async function searchBook() {
 }
 
 // 使用 Gemini AI 查詢所有平台
-async function searchAllPlatforms(originalTitle, simplifiedTitle, inputAuthor) {
+async function searchAllPlatforms(originalTitle, simplifiedTitle, inputAuthor, selectedPlatforms = []) {
     if (!apiSettings.apiKey) {
         throw new Error('請先設定 Gemini API 金鑰');
     }
     
     try {
-        const result = await searchWithGeminiAI(originalTitle, inputAuthor);
+        const result = await searchWithGeminiAI(originalTitle, inputAuthor, selectedPlatforms);
         
         if (result) {
             // 處理作者著作列表
@@ -185,7 +261,7 @@ async function searchAllPlatforms(originalTitle, simplifiedTitle, inputAuthor) {
 }
 
 // 使用 Gemini AI 查詢書籍評分
-async function searchWithGeminiAI(bookTitle, inputAuthor) {
+async function searchWithGeminiAI(bookTitle, inputAuthor, selectedPlatforms = []) {
     let searchType = '';
     let searchQuery = '';
     
@@ -205,8 +281,15 @@ async function searchWithGeminiAI(bookTitle, inputAuthor) {
     
     let prompt = '';
     
+    // 準備平台列表說明
+    const platformsText = selectedPlatforms.length > 0 
+        ? `🎯 **限制查詢平台**（只查詢以下選定平台）：${selectedPlatforms.join('、')}`
+        : `📋 查詢所有平台`;
+
     if (searchType === 'author_books') {
         prompt = `請列出作者「${inputAuthor}」的主要著作及其評分資料（繁體中文回覆）：
+
+${platformsText}
 
 請以 JSON 格式回傳該作者的多本書籍：
 {
@@ -218,7 +301,7 @@ async function searchWithGeminiAI(bookTitle, inputAuthor) {
             "simpleExplanation": "用一句話總結給十歲小朋友看（繁體中文，30字內）",
             "ratings": [
                 {
-                    "platform": "豆瓣",
+                    "platform": "豆瓣讀書",
                     "rating": 7.8,
                     "maxRating": 10,
                     "summary": "平台評價摘要（繁體中文，50字內）"
@@ -237,13 +320,18 @@ async function searchWithGeminiAI(bookTitle, inputAuthor) {
 注意事項：
 - 請確認作者名稱正確
 - 列出該作者最著名的 3-5 本書
-- 每本書都要有評分資料
+- ${selectedPlatforms.length > 0 ? `只查詢選定的平台：${selectedPlatforms.join('、')}` : '每本書都要有評分資料'}
 - 如果找不到該作者，請回傳空的 books 陣列`;
 
     } else {
-        prompt = `請查詢書籍「${searchQuery}」的詳細資訊和評分資料。
+        let platformInstructions = '';
+        if (selectedPlatforms.length > 0) {
+            platformInstructions = `🎯 **限制查詢平台**（只查詢以下選定平台）：
+${selectedPlatforms.map((p, i) => `${i + 1}. ${p}`).join('\n')}
 
-⭐ 查詢平台優先順序：
+💡 請只查詢上述選定的 ${selectedPlatforms.length} 個平台`;
+        } else {
+            platformInstructions = `⭐ 查詢平台優先順序：
 【主要平台】（優先查詢）：
 1. 豆瓣讀書
 2. Amazon Books  
@@ -254,7 +342,12 @@ async function searchWithGeminiAI(bookTitle, inputAuthor) {
 5. 讀墨 (Readmoo)
 6. Kobo
 
-💡 平台名稱請統一使用：豆瓣讀書、Amazon Books、Goodreads、博客來、讀墨、Kobo
+💡 平台名稱請統一使用：豆瓣讀書、Amazon Books、Goodreads、博客來、讀墨、Kobo`;
+        }
+
+        prompt = `請查詢書籍「${searchQuery}」的詳細資訊和評分資料。
+
+${platformInstructions}
 
 📋 回覆要求：
 - 所有內容必須使用繁體中文

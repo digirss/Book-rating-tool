@@ -89,6 +89,48 @@
                     <input type="text" id="bookAuthor" placeholder="輸入作者名稱可提高查詢準確度">
                 </div>
                 <div class="input-group">
+                    <label>查詢平台（最多選3個）</label>
+                    <div class="platform-selection">
+                        <div class="platform-category">
+                            <h4>📋 主要平台（優先推薦）</h4>
+                            <div class="platform-checkboxes">
+                                <label class="platform-checkbox">
+                                    <input type="checkbox" value="豆瓣讀書" checked>
+                                    <span>豆瓣讀書</span>
+                                </label>
+                                <label class="platform-checkbox">
+                                    <input type="checkbox" value="Amazon Books" checked>
+                                    <span>Amazon Books</span>
+                                </label>
+                                <label class="platform-checkbox">
+                                    <input type="checkbox" value="Goodreads" checked>
+                                    <span>Goodreads</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="platform-category">
+                            <h4>📚 備用平台</h4>
+                            <div class="platform-checkboxes">
+                                <label class="platform-checkbox">
+                                    <input type="checkbox" value="博客來">
+                                    <span>博客來</span>
+                                </label>
+                                <label class="platform-checkbox">
+                                    <input type="checkbox" value="讀墨">
+                                    <span>讀墨 (Readmoo)</span>
+                                </label>
+                                <label class="platform-checkbox">
+                                    <input type="checkbox" value="Kobo">
+                                    <span>Kobo</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="selection-info">
+                            <small id="platformCount">已選擇 3 個平台</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group">
                     <button id="searchBtn" onclick="searchBook()">🔍 查詢</button>
                 </div>
             </section>
