@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 書籍評分與推薦查詢工具</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/opencc.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📘 AI 書籍評分與推薦查詢工具</h1>
+            <p>查詢多個書評平台的評分，計算平均分數並提供推薦建議</p>
+        </header>
+
+        <main>
+            <section class="settings-section">
+                <div class="settings-toggle">
+                    <button id="settingsToggle" onclick="toggleSettings()">⚙️ API 設定</button>
+                </div>
+                
+                <div class="settings-panel" id="settingsPanel" style="display: none;">
+                    <h3>🔑 Gemini API 設定</h3>
+                    <div class="input-group">
+                        <label for="apiKey">API 金鑰</label>
+                        <input type="password" id="apiKey" placeholder="輸入你的 Gemini API Key">
+                    </div>
+                    <div class="input-group">
+                        <label for="modelName">模型名稱</label>
+                        <input type="text" id="modelName" value="gemini:gemini-2.0-flash-lite-preview-02-05" placeholder="gemini:gemini-2.0-flash-lite-preview-02-05">
+                    </div>
+                    <div class="input-group">
+                        <button onclick="saveSettings()">💾 儲存設定</button>
+                        <span id="settingsStatus"></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="search-section">
+                <div class="input-group">
+                    <label for="bookTitle">書名</label>
+                    <input type="text" id="bookTitle" placeholder="請輸入書名（繁體或簡體皆可）">
+                    <button id="searchBtn" onclick="searchBook()">🔍 查詢</button>
+                </div>
+            </section>
+
+            <section class="loading-section" id="loadingSection" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p>正在查詢各平台評分...</p>
+            </section>
+
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <div class="book-info">
+                    <h2 id="bookTitleResult">書名</h2>
+                    <p id="bookAuthor">作者：</p>
+                </div>
+
+                <div class="ratings-container">
+                    <div class="platform-ratings" id="platformRatings">
+                        <!-- 動態生成的評分資料會在這裡 -->
+                    </div>
+                </div>
+
+                <div class="summary-section">
+                    <div class="average-rating">
+                        <h3>平均評分：<span id="averageScore">-</span> / 10</h3>
+                        <h3>推薦程度：<span id="recommendation">-</span></h3>
+                    </div>
+                </div>
+
+                <div class="export-section">
+                    <button id="exportBtn" onclick="exportToMarkdown()">📄 匯出 Markdown</button>
+                </div>
+            </section>
+
+            <section class="error-section" id="errorSection" style="display: none;">
+                <p id="errorMessage">查詢過程中發生錯誤，請稍後再試。</p>
+            </section>
+        </main>
+
+        <footer>
+            <p>本工具僅供參考，實際評分請以各平台為準</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
