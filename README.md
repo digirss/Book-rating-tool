@@ -116,8 +116,7 @@ book-rating-tool/
 ├── index.html                    # 主頁面（含 API 設定介面）
 ├── style.css                     # 響應式樣式設計
 ├── script.js                     # 核心邏輯（AI 查詢、資料處理）
-├── README.md                     # 專案說明文件
-└── complete_conversation_log.md  # 完整開發歷程記錄
+└── README.md                     # 專案說明文件
 ```
 
 ## 🌟 獨特特色
@@ -182,7 +181,6 @@ python -m http.server 8000
 歡迎提交 Issue 和 Pull Request！
 
 ### 開發歷程
-- 📋 完整的開發歷程記錄在 `complete_conversation_log.md`
 - 🔄 所有功能都經過實際測試和用戶反饋優化
 - 🎯 持續改進中，歡迎功能建議
 
