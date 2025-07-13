@@ -79,6 +79,8 @@ async function searchBook() {
         // 處理結果顯示
         if (bookData.isAuthorSearch) {
             displayAuthorResults();
+        } else if (bookData.noRatings) {
+            displayNoRatingsResults();
         } else {
             // 計算平均分數和推薦語
             calculateAverageAndRecommendation();
@@ -113,12 +115,22 @@ async function searchAllPlatforms(originalTitle, simplifiedTitle, inputAuthor) {
                 bookData.books = result.books;
                 return;
             }
-            // 處理單本書籍
+            // 處理單本書籍（有評分）
             else if (result.ratings && result.ratings.length > 0) {
                 bookData.ratings = result.ratings;
                 bookData.author = result.author || '未知';
                 bookData.mainSummary = result.mainSummary || '';
                 bookData.simpleExplanation = result.simpleExplanation || '';
+                bookData.purchaseLinks = result.purchaseLinks || [];
+                return;
+            }
+            // 處理找到書籍但無評分的情況
+            else if (result.title && result.author) {
+                bookData.noRatings = true;
+                bookData.author = result.author;
+                bookData.mainSummary = result.mainSummary || '';
+                bookData.simpleExplanation = result.simpleExplanation || '';
+                bookData.purchaseLinks = result.purchaseLinks || [];
                 return;
             }
         }
@@ -211,22 +223,27 @@ async function searchWithGeminiAI(bookTitle, inputAuthor) {
             "rating": 7.8,
             "maxRating": 10,
             "summary": "平台評價摘要（繁體中文，50字內）"
+        }
+    ],
+    "purchaseLinks": [
+        {
+            "platform": "博客來",
+            "url": "https://www.books.com.tw/products/xxxxx"
         },
         {
             "platform": "Amazon",
-            "rating": 4.2,
-            "maxRating": 5,
-            "summary": "平台評價摘要（繁體中文，50字內）"
+            "url": "https://amazon.com/xxxxx"
         }
     ]
 }
 
 注意事項：
 - 請務必核對書名和作者是否正確匹配
-- 只查詢確實存在且評分資料可靠的書籍
-- 如果找不到確切的書籍，請回傳空的 ratings 陣列
+- 即使沒有評分資料，也要提供書籍基本資訊（title, author, mainSummary, simpleExplanation）
+- 如果找不到評分，ratings 陣列可以為空，但要提供 purchaseLinks
 - 如果某平台沒有該書籍，請跳過
 - 評分請使用該平台的實際評分制度
+- purchaseLinks：提供主要購書平台連結（博客來、Amazon、誠品等）
 - mainSummary：說明書籍的核心內容、主要觀點和價值
 - simpleExplanation：用十歲小朋友能理解的簡單語言解釋
 - 所有文字請使用繁體中文，簡潔明瞭
@@ -328,6 +345,55 @@ function calculateAverageAndRecommendation() {
     } else {
         bookData.recommendation = '不推薦';
     }
+}
+
+// 顯示無評分但有書籍資訊的結果
+function displayNoRatingsResults() {
+    // 隱藏載入狀態
+    hideLoading();
+    
+    // 顯示摘要區域，隱藏平均分數區域
+    document.querySelector('.book-summary').style.display = 'block';
+    document.querySelector('.summary-section').style.display = 'none';
+    
+    // 更新書籍資訊
+    document.getElementById('bookTitleResult').textContent = bookData.originalTitle;
+    document.getElementById('bookAuthor').textContent = `作者：${bookData.author || '未知'}`;
+    
+    // 更新書籍摘要
+    document.getElementById('mainSummary').textContent = bookData.mainSummary || '暫無摘要';
+    document.getElementById('simpleExplanation').textContent = bookData.simpleExplanation || '暫無簡易說明';
+    
+    // 顯示無評分提示和購買連結
+    const platformRatingsContainer = document.getElementById('platformRatings');
+    platformRatingsContainer.innerHTML = `
+        <div class="no-ratings-card">
+            <div class="no-ratings-header">
+                <h3>📊 評分資訊</h3>
+                <p>很抱歉，暫時找不到這本書在各大評分平台的資料。</p>
+            </div>
+            
+            ${bookData.purchaseLinks && bookData.purchaseLinks.length > 0 ? `
+            <div class="purchase-links">
+                <h4>🛒 購書連結</h4>
+                <div class="links-container">
+                    ${bookData.purchaseLinks.map(link => `
+                        <a href="${link.url}" target="_blank" class="purchase-link">
+                            ${link.platform}
+                        </a>
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
+            
+            <div class="suggestion">
+                <p>💡 建議：您可以嘗試直接到各大購書網站搜尋，或等待更多評分資料上線。</p>
+            </div>
+        </div>
+    `;
+    
+    // 顯示結果區域
+    document.getElementById('resultsSection').style.display = 'block';
 }
 
 // 顯示作者著作列表結果
