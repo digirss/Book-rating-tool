@@ -120,6 +120,8 @@ async function searchAllPlatforms(originalTitle, simplifiedTitle, inputAuthor) {
             else if (result.ratings && result.ratings.length > 0) {
                 bookData.ratings = result.ratings;
                 bookData.author = result.author || '未知';
+                bookData.titleEn = result.titleEn || '';
+                bookData.authorEn = result.authorEn || '';
                 bookData.mainIdeal = result.mainIdeal || '';
                 bookData.summaries = result.summaries || [];
                 bookData.keyQuestions = result.keyQuestions || [];
@@ -131,6 +133,8 @@ async function searchAllPlatforms(originalTitle, simplifiedTitle, inputAuthor) {
             else if (result.title && result.author) {
                 bookData.noRatings = true;
                 bookData.author = result.author;
+                bookData.titleEn = result.titleEn || '';
+                bookData.authorEn = result.authorEn || '';
                 bookData.mainIdeal = result.mainIdeal || '';
                 bookData.summaries = result.summaries || [];
                 bookData.keyQuestions = result.keyQuestions || [];
@@ -226,8 +230,10 @@ async function searchWithGeminiAI(bookTitle, inputAuthor) {
 
 請以 JSON 格式回傳：
 {
-    "title": "書名（繁體中文）",
-    "author": "作者（繁體中文）",
+    "title": "思維的本質",
+    "titleEn": "The Essence of Thought",
+    "author": "約翰·史密斯",
+    "authorEn": "John Smith",
     "mainIdeal": "書籍核心理念（繁體中文，100字內，說明這本書的核心思想和主要價值）",
     "summaries": [
         "摘要1：重點概念（50字內）",
@@ -249,6 +255,12 @@ async function searchWithGeminiAI(bookTitle, inputAuthor) {
             "rating": 7.8,
             "maxRating": 10,
             "summary": "平台評價摘要（繁體中文，50字內）"
+        },
+        {
+            "platform": "Amazon Books",
+            "rating": 4.2,
+            "maxRating": 5,
+            "summary": "平台評價摘要（繁體中文，50字內）"
         }
     ]
 }
@@ -259,6 +271,9 @@ async function searchWithGeminiAI(bookTitle, inputAuthor) {
 - 如果找不到評分，ratings 陣列設為空
 - 所有簡體中文內容必須轉換為繁體中文
 - 調整大陸用語為台灣用語（如：信息→資訊、软件→軟體）
+- **重要**：如果是翻譯書籍，請務必提供正確的英文原書名和作者英文名
+- titleEn 和 authorEn 對於 Amazon、Goodreads 等英文平台的搜尋非常重要
+- 如果是中文原創作品沒有英文版，titleEn 和 authorEn 可以留空
 - 只回傳 JSON，不要其他說明文字`;
     }
 
@@ -368,8 +383,23 @@ function generatePurchaseLinks(bookTitle, author = '') {
 }
 
 // 生成評分平台的搜尋連結
-function generateRatingPlatformUrl(platform, bookTitle, author = '') {
-    const searchQuery = author ? `${bookTitle} ${author}` : bookTitle;
+function generateRatingPlatformUrl(platform, bookTitle, author = '', titleEn = '', authorEn = '') {
+    let searchQuery = '';
+    
+    // 根據平台類型選擇使用中文或英文書名
+    const isEnglishPlatform = ['Amazon', 'Amazon Books', 'Goodreads'].includes(platform);
+    
+    if (isEnglishPlatform && titleEn) {
+        // 英文平台使用英文書名和作者
+        const englishAuthor = authorEn || author;
+        searchQuery = englishAuthor ? `${titleEn} ${englishAuthor}` : titleEn;
+        console.log(`${platform} 使用英文搜尋:`, searchQuery);
+    } else {
+        // 中文平台使用中文書名和作者
+        searchQuery = author ? `${bookTitle} ${author}` : bookTitle;
+        console.log(`${platform} 使用中文搜尋:`, searchQuery);
+    }
+    
     const encodedQuery = encodeURIComponent(searchQuery);
     
     switch (platform) {
@@ -608,7 +638,13 @@ function createPlatformCard(rating) {
     
     // 生成平台搜尋連結
     const cleanTitle = bookData.originalTitle.replace(/資訊不足/g, '').trim();
-    const platformUrl = generateRatingPlatformUrl(rating.platform, cleanTitle, bookData.author);
+    const platformUrl = generateRatingPlatformUrl(
+        rating.platform, 
+        cleanTitle, 
+        bookData.author, 
+        bookData.titleEn, 
+        bookData.authorEn
+    );
     
     card.innerHTML = `
         <div class="platform-header">
