@@ -324,6 +324,10 @@ function generatePurchaseLinks(bookTitle, author = '') {
     const searchQuery = cleanAuthor ? `${cleanTitle} ${cleanAuthor}` : cleanTitle;
     const encodedQuery = encodeURIComponent(searchQuery);
     
+    // 除錯用：顯示編碼結果
+    console.log('原始查詢:', searchQuery);
+    console.log('編碼後查詢:', encodedQuery);
+    
     return [
         {
             platform: "博客來",
@@ -331,7 +335,7 @@ function generatePurchaseLinks(bookTitle, author = '') {
         },
         {
             platform: "Amazon",
-            url: `https://www.amazon.com/s?k=${encodedQuery}&i=stripbooks`
+            url: `https://www.amazon.com.tw/s?k=${encodedQuery}&i=stripbooks`
         },
         {
             platform: "誠品",
