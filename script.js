@@ -20,6 +20,12 @@ document.addEventListener('DOMContentLoaded', function() {
             searchBook();
         }
     });
+    
+    document.getElementById('bookAuthor').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchBook();
+        }
+    });
 });
 
 // 簡單的繁簡轉換（基本字符對應）
@@ -44,9 +50,10 @@ function convertToSimplified(text) {
 // 主要搜索函數
 async function searchBook() {
     const bookTitle = document.getElementById('bookTitle').value.trim();
+    const bookAuthor = document.getElementById('bookAuthor').value.trim();
     
-    if (!bookTitle) {
-        alert('請輸入書名');
+    if (!bookTitle && !bookAuthor) {
+        alert('請至少輸入書名或作者');
         return;
     }
     
@@ -61,40 +68,59 @@ async function searchBook() {
         bookData = {
             originalTitle: bookTitle,
             simplifiedTitle: simplifiedTitle,
+            inputAuthor: bookAuthor,
             author: '',
             ratings: []
         };
         
         // 依序查詢各平台
-        await searchAllPlatforms(bookTitle, simplifiedTitle);
+        await searchAllPlatforms(bookTitle, simplifiedTitle, bookAuthor);
         
-        // 計算平均分數和推薦語
-        calculateAverageAndRecommendation();
-        
-        // 顯示結果
-        displayResults();
+        // 處理結果顯示
+        if (bookData.isAuthorSearch) {
+            displayAuthorResults();
+        } else {
+            // 計算平均分數和推薦語
+            calculateAverageAndRecommendation();
+            // 顯示結果
+            displayResults();
+        }
         
     } catch (error) {
         console.error('搜索過程中發生錯誤:', error);
-        showError('搜索過程中發生錯誤，請稍後再試');
+        if (error.message.includes('未找到任何評分資料')) {
+            showError('找不到這本書的評分資料，請檢查書名是否正確或嘗試輸入作者名稱');
+        } else {
+            showError('查詢過程中發生錯誤，請稍後再試');
+        }
     }
 }
 
 // 使用 Gemini AI 查詢所有平台
-async function searchAllPlatforms(originalTitle, simplifiedTitle) {
+async function searchAllPlatforms(originalTitle, simplifiedTitle, inputAuthor) {
     if (!apiSettings.apiKey) {
         throw new Error('請先設定 Gemini API 金鑰');
     }
     
     try {
-        const result = await searchWithGeminiAI(originalTitle);
+        const result = await searchWithGeminiAI(originalTitle, inputAuthor);
         
-        if (result && result.ratings && result.ratings.length > 0) {
-            bookData.ratings = result.ratings;
-            bookData.author = result.author || '未知';
-            bookData.mainSummary = result.mainSummary || '';
-            bookData.simpleExplanation = result.simpleExplanation || '';
-            return;
+        if (result) {
+            // 處理作者著作列表
+            if (result.books && result.books.length > 0) {
+                bookData.isAuthorSearch = true;
+                bookData.author = result.author || inputAuthor;
+                bookData.books = result.books;
+                return;
+            }
+            // 處理單本書籍
+            else if (result.ratings && result.ratings.length > 0) {
+                bookData.ratings = result.ratings;
+                bookData.author = result.author || '未知';
+                bookData.mainSummary = result.mainSummary || '';
+                bookData.simpleExplanation = result.simpleExplanation || '';
+                return;
+            }
         }
         
         throw new Error('AI 未找到任何評分資料');
@@ -105,8 +131,63 @@ async function searchAllPlatforms(originalTitle, simplifiedTitle) {
 }
 
 // 使用 Gemini AI 查詢書籍評分
-async function searchWithGeminiAI(bookTitle) {
-    const prompt = `請查詢書籍「${bookTitle}」在以下平台的評分和簡短摘要（繁體中文回覆）：
+async function searchWithGeminiAI(bookTitle, inputAuthor) {
+    let searchType = '';
+    let searchQuery = '';
+    
+    if (bookTitle && inputAuthor) {
+        // 精確查詢特定書籍
+        searchType = 'specific_book';
+        searchQuery = `書名：${bookTitle}，作者：${inputAuthor}`;
+    } else if (bookTitle) {
+        // 只查詢書名
+        searchType = 'book_only';
+        searchQuery = `書名：${bookTitle}`;
+    } else if (inputAuthor) {
+        // 查詢作者的所有著作
+        searchType = 'author_books';
+        searchQuery = `作者：${inputAuthor}`;
+    }
+    
+    let prompt = '';
+    
+    if (searchType === 'author_books') {
+        prompt = `請列出作者「${inputAuthor}」的主要著作及其評分資料（繁體中文回覆）：
+
+請以 JSON 格式回傳該作者的多本書籍：
+{
+    "author": "作者名稱",
+    "books": [
+        {
+            "title": "書名1",
+            "mainSummary": "書籍主旨摘要（繁體中文，100字內）",
+            "simpleExplanation": "用一句話總結給十歲小朋友看（繁體中文，30字內）",
+            "ratings": [
+                {
+                    "platform": "豆瓣",
+                    "rating": 7.8,
+                    "maxRating": 10,
+                    "summary": "平台評價摘要（繁體中文，50字內）"
+                }
+            ]
+        },
+        {
+            "title": "書名2",
+            "mainSummary": "...",
+            "simpleExplanation": "...",
+            "ratings": [...]
+        }
+    ]
+}
+
+注意事項：
+- 請確認作者名稱正確
+- 列出該作者最著名的 3-5 本書
+- 每本書都要有評分資料
+- 如果找不到該作者，請回傳空的 books 陣列`;
+
+    } else {
+        prompt = `請查詢書籍「${searchQuery}」在以下平台的評分和簡短摘要（繁體中文回覆）：
 
 主要平台（優先查詢）：
 1. 豆瓣讀書
@@ -141,7 +222,9 @@ async function searchWithGeminiAI(bookTitle) {
 }
 
 注意事項：
-- 請提供真實存在的評分資料
+- 請務必核對書名和作者是否正確匹配
+- 只查詢確實存在且評分資料可靠的書籍
+- 如果找不到確切的書籍，請回傳空的 ratings 陣列
 - 如果某平台沒有該書籍，請跳過
 - 評分請使用該平台的實際評分制度
 - mainSummary：說明書籍的核心內容、主要觀點和價值
@@ -246,10 +329,42 @@ function calculateAverageAndRecommendation() {
     }
 }
 
-// 顯示結果
+// 顯示作者著作列表結果
+function displayAuthorResults() {
+    // 隱藏載入狀態
+    hideLoading();
+    
+    // 更新標題顯示為作者名稱
+    document.getElementById('bookTitleResult').textContent = `${bookData.author} 的著作`;
+    document.getElementById('bookAuthor').textContent = `共找到 ${bookData.books.length} 本書籍`;
+    
+    // 隱藏單本書的摘要區域
+    document.querySelector('.book-summary').style.display = 'none';
+    
+    // 顯示作者的所有著作
+    const platformRatingsContainer = document.getElementById('platformRatings');
+    platformRatingsContainer.innerHTML = '';
+    
+    bookData.books.forEach(book => {
+        const bookCard = createAuthorBookCard(book);
+        platformRatingsContainer.appendChild(bookCard);
+    });
+    
+    // 隱藏平均分數區域（因為是多本書）
+    document.querySelector('.summary-section').style.display = 'none';
+    
+    // 顯示結果區域
+    document.getElementById('resultsSection').style.display = 'block';
+}
+
+// 顯示單本書結果
 function displayResults() {
     // 隱藏載入狀態
     hideLoading();
+    
+    // 顯示摘要和平均分數區域
+    document.querySelector('.book-summary').style.display = 'block';
+    document.querySelector('.summary-section').style.display = 'block';
     
     // 更新書籍資訊
     document.getElementById('bookTitleResult').textContent = bookData.originalTitle;
@@ -291,6 +406,71 @@ function createPlatformCard(rating) {
             <span class="platform-rating">${ratingDisplay}</span>
         </div>
         <div class="platform-summary">${rating.summary}</div>
+    `;
+    
+    return card;
+}
+
+// 創建作者書籍卡片
+function createAuthorBookCard(book) {
+    const card = document.createElement('div');
+    card.className = 'author-book-card';
+    
+    // 計算該書的平均分
+    let totalScore = 0;
+    let validRatings = 0;
+    
+    book.ratings.forEach(rating => {
+        const normalizedRating = (rating.rating / rating.maxRating) * 10;
+        totalScore += normalizedRating;
+        validRatings++;
+    });
+    
+    const averageScore = validRatings > 0 ? (totalScore / validRatings).toFixed(1) : '無評分';
+    
+    // 生成推薦語
+    let recommendation = '無評分';
+    if (validRatings > 0) {
+        const avgScore = parseFloat(averageScore);
+        if (avgScore >= 8.5) recommendation = '非常推薦';
+        else if (avgScore >= 7.0) recommendation = '可考慮閱讀';
+        else if (avgScore >= 6.0) recommendation = '勉強一讀';
+        else recommendation = '不推薦';
+    }
+    
+    card.innerHTML = `
+        <div class="book-header">
+            <h3 class="book-title">${book.title}</h3>
+            <div class="book-score">
+                <span class="score">${averageScore}/10</span>
+                <span class="recommendation">${recommendation}</span>
+            </div>
+        </div>
+        
+        <div class="book-summaries">
+            <div class="main-summary-inline">
+                <strong>📖 內容：</strong>${book.mainSummary || '暫無摘要'}
+            </div>
+            <div class="simple-explanation-inline">
+                <strong>👶 簡單說：</strong>${book.simpleExplanation || '暫無簡易說明'}
+            </div>
+        </div>
+        
+        <div class="book-ratings">
+            ${book.ratings.map(rating => {
+                const ratingDisplay = rating.maxRating === 10 
+                    ? `${rating.rating}/10`
+                    : `${rating.rating}/${rating.maxRating} → ${((rating.rating / rating.maxRating) * 10).toFixed(1)}/10`;
+                
+                return `
+                    <div class="rating-item">
+                        <span class="platform">${rating.platform}</span>
+                        <span class="rating">${ratingDisplay}</span>
+                        <span class="summary">${rating.summary}</span>
+                    </div>
+                `;
+            }).join('')}
+        </div>
     `;
     
     return card;

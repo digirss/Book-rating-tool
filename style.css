@@ -310,6 +310,125 @@ main {
     margin-bottom: 30px;
 }
 
+/* Author book cards */
+.author-book-card {
+    background: white;
+    border: 2px solid #e1e5e9;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.author-book-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+    border-color: #667eea;
+}
+
+.book-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.book-title {
+    color: #333;
+    font-size: 1.3rem;
+    margin: 0;
+    flex: 1;
+}
+
+.book-score {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+}
+
+.score {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.recommendation {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    color: #333;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.book-summaries {
+    margin-bottom: 20px;
+}
+
+.main-summary-inline, .simple-explanation-inline {
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    line-height: 1.5;
+}
+
+.main-summary-inline {
+    background: #f8f9fa;
+    border-left: 4px solid #667eea;
+}
+
+.simple-explanation-inline {
+    background: linear-gradient(135deg, #fff5fd 0%, #fff 100%);
+    border-left: 4px solid #f093fb;
+}
+
+.main-summary-inline strong, .simple-explanation-inline strong {
+    color: #555;
+    margin-right: 8px;
+}
+
+.book-ratings {
+    display: grid;
+    gap: 10px;
+}
+
+.rating-item {
+    display: grid;
+    grid-template-columns: 80px 120px 1fr;
+    gap: 15px;
+    align-items: center;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.rating-item .platform {
+    font-weight: 600;
+    color: #667eea;
+}
+
+.rating-item .rating {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.rating-item .summary {
+    color: #666;
+    line-height: 1.4;
+}
+
 .platform-card {
     background: white;
     border: 2px solid #e1e5e9;
