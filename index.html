@@ -22,6 +22,29 @@
                 
                 <div class="settings-panel" id="settingsPanel" style="display: none;">
                     <h3>🔑 Gemini API 設定</h3>
+                    
+                    <div class="api-tutorial">
+                        <h4>📝 如何取得 Google Gemini API 金鑰：</h4>
+                        <ol>
+                            <li>前往 <a href="https://aistudio.google.com/" target="_blank">Google AI Studio</a></li>
+                            <li>使用 Google 帳號登入</li>
+                            <li>點擊右上角「Get API Key」</li>
+                            <li>選擇「Create API key in new project」</li>
+                            <li>複製產生的 API 金鑰</li>
+                            <li>貼到下方欄位並儲存</li>
+                        </ol>
+                    </div>
+
+                    <div class="security-notice">
+                        <h4>🔒 安全提醒：</h4>
+                        <ul>
+                            <li>✅ API 金鑰僅儲存在<strong>您的電腦本機</strong>（localStorage）</li>
+                            <li>✅ 不會上傳到任何伺服器</li>
+                            <li>⚠️ <strong>請勿在公共電腦上使用此工具</strong></li>
+                            <li>⚠️ 使用完畢後可點擊「清除設定」移除金鑰</li>
+                        </ul>
+                    </div>
+
                     <div class="input-group">
                         <label for="apiKey">API 金鑰</label>
                         <input type="password" id="apiKey" placeholder="輸入你的 Gemini API Key">
@@ -32,6 +55,7 @@
                     </div>
                     <div class="input-group">
                         <button onclick="saveSettings()">💾 儲存設定</button>
+                        <button onclick="clearSettings()" class="clear-btn">🗑️ 清除設定</button>
                         <span id="settingsStatus"></span>
                     </div>
                 </div>
@@ -54,6 +78,17 @@
                 <div class="book-info">
                     <h2 id="bookTitleResult">書名</h2>
                     <p id="bookAuthor">作者：</p>
+                </div>
+
+                <div class="book-summary">
+                    <div class="main-summary">
+                        <h3>📖 書籍摘要</h3>
+                        <p id="mainSummary">-</p>
+                    </div>
+                    <div class="simple-explanation">
+                        <h3>👶 給小朋友看</h3>
+                        <p id="simpleExplanation">-</p>
+                    </div>
                 </div>
 
                 <div class="ratings-container">

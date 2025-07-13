@@ -104,10 +104,62 @@ main {
     transform: translateY(-1px);
 }
 
+.settings-panel .clear-btn {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+.settings-panel .clear-btn:hover {
+    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+}
+
 #settingsStatus {
     color: #28a745;
     font-weight: 600;
     font-size: 0.9rem;
+}
+
+/* API 教學和安全提醒樣式 */
+.api-tutorial, .security-notice {
+    background: #f8f9fa;
+    border-left: 4px solid #007bff;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 0 8px 8px 0;
+}
+
+.security-notice {
+    border-left-color: #ffc107;
+    background: #fff9e6;
+}
+
+.api-tutorial h4, .security-notice h4 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 1rem;
+}
+
+.api-tutorial ol, .security-notice ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.api-tutorial li, .security-notice li {
+    margin: 5px 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.api-tutorial a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.api-tutorial a:hover {
+    text-decoration: underline;
+}
+
+.security-notice strong {
+    color: #d63384;
 }
 
 /* Search section */
@@ -207,6 +259,48 @@ main {
 .book-info p {
     font-size: 1.1rem;
     opacity: 0.9;
+}
+
+/* Book summary section */
+.book-summary {
+    margin-bottom: 30px;
+}
+
+.main-summary, .simple-explanation {
+    background: white;
+    border: 2px solid #e1e5e9;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.main-summary {
+    border-left: 4px solid #667eea;
+}
+
+.simple-explanation {
+    border-left: 4px solid #f093fb;
+    background: linear-gradient(135deg, #fff5fd 0%, #fff 100%);
+}
+
+.main-summary h3, .simple-explanation h3 {
+    color: #333;
+    margin: 0 0 10px 0;
+    font-size: 1.1rem;
+}
+
+.main-summary p, .simple-explanation p {
+    color: #555;
+    line-height: 1.6;
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.simple-explanation p {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #d63384;
 }
 
 /* Platform ratings */

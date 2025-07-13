@@ -105,6 +105,8 @@ async function searchAllPlatforms(originalTitle, simplifiedTitle) {
         if (result && result.ratings && result.ratings.length > 0) {
             bookData.ratings = result.ratings;
             bookData.author = result.author || '未知';
+            bookData.mainSummary = result.mainSummary || '';
+            bookData.simpleExplanation = result.simpleExplanation || '';
             return;
         }
         
@@ -133,18 +135,20 @@ async function searchWithGeminiAI(bookTitle) {
 {
     "title": "書名",
     "author": "作者",
+    "mainSummary": "書籍主旨摘要（繁體中文，100字內，說明這本書的核心內容和主要觀點）",
+    "simpleExplanation": "用一句話總結給十歲小朋友看（繁體中文，30字內，用簡單易懂的語言）",
     "ratings": [
         {
             "platform": "豆瓣",
             "rating": 7.8,
             "maxRating": 10,
-            "summary": "書籍摘要或評價（繁體中文，50字內）"
+            "summary": "平台評價摘要（繁體中文，50字內）"
         },
         {
             "platform": "Amazon",
             "rating": 4.2,
             "maxRating": 5,
-            "summary": "書籍摘要或評價（繁體中文，50字內）"
+            "summary": "平台評價摘要（繁體中文，50字內）"
         }
     ]
 }
@@ -153,7 +157,9 @@ async function searchWithGeminiAI(bookTitle) {
 - 請提供真實存在的評分資料
 - 如果某平台沒有該書籍，請跳過
 - 評分請使用該平台的實際評分制度
-- 摘要請使用繁體中文，簡潔明瞭
+- mainSummary：說明書籍的核心內容、主要觀點和價值
+- simpleExplanation：用十歲小朋友能理解的簡單語言解釋
+- 所有文字請使用繁體中文，簡潔明瞭
 - 只回傳 JSON，不要其他文字`;
 
     try {
@@ -262,6 +268,10 @@ function displayResults() {
     document.getElementById('bookTitleResult').textContent = bookData.originalTitle;
     document.getElementById('bookAuthor').textContent = `作者：${bookData.author || '未知'}`;
     
+    // 更新書籍摘要
+    document.getElementById('mainSummary').textContent = bookData.mainSummary || '暫無摘要';
+    document.getElementById('simpleExplanation').textContent = bookData.simpleExplanation || '暫無簡易說明';
+    
     // 更新平台評分
     const platformRatingsContainer = document.getElementById('platformRatings');
     platformRatingsContainer.innerHTML = '';
@@ -309,6 +319,20 @@ function exportToMarkdown() {
     let markdown = `# 書名：${bookData.originalTitle}\n`;
     markdown += `## 作者：${bookData.author || '未知'}\n\n`;
     
+    // 書籍摘要
+    if (bookData.mainSummary) {
+        markdown += `## 📖 書籍摘要\n`;
+        markdown += `${bookData.mainSummary}\n\n`;
+    }
+    
+    // 簡易說明
+    if (bookData.simpleExplanation) {
+        markdown += `## 👶 給小朋友看\n`;
+        markdown += `${bookData.simpleExplanation}\n\n`;
+    }
+    
+    markdown += `---\n\n`;
+    
     // 各平台評分
     bookData.ratings.forEach(rating => {
         const ratingDisplay = rating.maxRating === 10 
@@ -316,7 +340,7 @@ function exportToMarkdown() {
             : `${rating.rating} / ${rating.maxRating} → ${rating.normalizedRating.toFixed(1)} / 10`;
         
         markdown += `### ${rating.platform} 評分：${ratingDisplay}\n`;
-        markdown += `摘要：${rating.summary}\n\n`;
+        markdown += `評價：${rating.summary}\n\n`;
     });
     
     markdown += `---\n\n`;
@@ -420,5 +444,30 @@ function loadSettings() {
     } else {
         // 設定預設模型
         document.getElementById('modelName').value = 'gemini:gemini-2.0-flash-lite-preview-02-05';
+    }
+}
+
+function clearSettings() {
+    if (confirm('確定要清除所有 API 設定嗎？此操作無法復原。')) {
+        // 清除本地存儲
+        localStorage.removeItem('bookRatingTool_apiKey');
+        localStorage.removeItem('bookRatingTool_modelName');
+        
+        // 清除記憶體中的設定
+        apiSettings.apiKey = '';
+        apiSettings.modelName = 'gemini:gemini-2.0-flash-lite-preview-02-05';
+        
+        // 清除輸入欄位
+        document.getElementById('apiKey').value = '';
+        document.getElementById('modelName').value = 'gemini:gemini-2.0-flash-lite-preview-02-05';
+        
+        // 顯示成功訊息
+        const status = document.getElementById('settingsStatus');
+        status.textContent = '🗑️ 設定已清除';
+        status.style.color = '#dc3545';
+        
+        setTimeout(() => {
+            status.textContent = '';
+        }, 3000);
     }
 }
