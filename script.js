@@ -335,7 +335,7 @@ function generatePurchaseLinks(bookTitle, author = '') {
         },
         {
             platform: "Amazon",
-            url: `https://www.amazon.com.tw/s?k=${encodedQuery}&i=stripbooks`
+            url: `https://www.amazon.com/s?k=${encodedQuery}&i=stripbooks`
         },
         {
             platform: "誠品",
