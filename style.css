@@ -179,19 +179,60 @@ main {
     font-size: 1.1rem;
 }
 
-.input-group input {
+.input-group input, .input-group select {
     padding: 15px 20px;
     border: 2px solid #e1e5e9;
     border-radius: 12px;
     font-size: 1rem;
     transition: all 0.3s ease;
     background: white;
+    width: 100%;
 }
 
-.input-group input:focus {
+.input-group input:focus, .input-group select:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* 模型選擇器樣式 */
+.model-select {
+    cursor: pointer;
+}
+
+.model-select option {
+    padding: 10px;
+    font-size: 0.95rem;
+}
+
+.model-info {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #e3f2fd;
+    border-radius: 8px;
+    border-left: 3px solid #2196f3;
+}
+
+.model-info small {
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+/* 不同模型資訊的樣式 */
+.model-description.info-recommended {
+    color: #1565c0;
+}
+
+.model-description.info-premium {
+    color: #e65100;
+}
+
+.model-description.info-experimental {
+    color: #7b1fa2;
+}
+
+.model-description.info-stable {
+    color: #2e7d32;
 }
 
 .input-group button {

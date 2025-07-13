@@ -35,6 +35,14 @@
                             <li>複製產生的 API 金鑰</li>
                             <li>貼到下方欄位並儲存</li>
                         </ol>
+                        
+                        <h4>🤖 模型選擇說明：</h4>
+                        <ul>
+                            <li><strong>Gemini 1.5 Flash</strong>：速度快、準確度高，推薦日常使用</li>
+                            <li><strong>Gemini 1.5 Pro</strong>：最高準確度，複雜查詢專用（付費）</li>
+                            <li><strong>Gemini 2.0 Flash</strong>：最新實驗版，功能強大</li>
+                            <li><strong>Gemini 1.0 Pro</strong>：穩定版本，基礎功能齊全</li>
+                        </ul>
                     </div>
 
                     <div class="security-notice">
@@ -52,8 +60,16 @@
                         <input type="password" id="apiKey" placeholder="輸入你的 Gemini API Key">
                     </div>
                     <div class="input-group">
-                        <label for="modelName">模型名稱</label>
-                        <input type="text" id="modelName" value="gemini-1.5-flash" placeholder="gemini-1.5-flash">
+                        <label for="modelName">AI 模型選擇</label>
+                        <select id="modelName" class="model-select">
+                            <option value="gemini-1.5-flash">Gemini 1.5 Flash (推薦) - 🆓 免費額度內</option>
+                            <option value="gemini-1.5-pro">Gemini 1.5 Pro - 💰 付費使用</option>
+                            <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash (實驗版) - 🆓 免費額度內</option>
+                            <option value="gemini-1.0-pro">Gemini 1.0 Pro - 🆓 免費額度內</option>
+                        </select>
+                        <div class="model-info">
+                            <small>💡 <strong>Gemini 1.5 Flash</strong> 提供最佳的速度和準確度平衡</small>
+                        </div>
                     </div>
                     <div class="input-group">
                         <button onclick="saveSettings()">💾 儲存設定</button>

@@ -26,6 +26,11 @@ document.addEventListener('DOMContentLoaded', function() {
             searchBook();
         }
     });
+    
+    // 綁定模型選擇變更事件
+    document.getElementById('modelName').addEventListener('change', function(e) {
+        updateModelInfo(e.target.value);
+    });
 });
 
 // 簡單的繁簡轉換（基本字符對應）
@@ -45,6 +50,34 @@ function convertToSimplified(text) {
         result = result.replace(new RegExp(trad, 'g'), simp);
     }
     return result;
+}
+
+// 更新模型資訊顯示
+function updateModelInfo(modelName) {
+    const modelInfoDiv = document.querySelector('.model-info small');
+    const modelInfo = {
+        'gemini-1.5-flash': {
+            text: '💡 <strong>Gemini 1.5 Flash</strong> 提供最佳的速度和準確度平衡',
+            class: 'info-recommended'
+        },
+        'gemini-1.5-pro': {
+            text: '⚡ <strong>Gemini 1.5 Pro</strong> 最高準確度，適合複雜查詢（付費）',
+            class: 'info-premium'
+        },
+        'gemini-2.0-flash-exp': {
+            text: '🔬 <strong>Gemini 2.0 Flash</strong> 最新實驗版本，功能強大',
+            class: 'info-experimental'
+        },
+        'gemini-1.0-pro': {
+            text: '🔄 <strong>Gemini 1.0 Pro</strong> 穩定版本，基礎功能齊全',
+            class: 'info-stable'
+        }
+    };
+    
+    if (modelInfo[modelName]) {
+        modelInfoDiv.innerHTML = modelInfo[modelName].text;
+        modelInfoDiv.className = `model-description ${modelInfo[modelName].class}`;
+    }
 }
 
 // 主要搜索函數
@@ -941,7 +974,7 @@ function toggleSettings() {
 
 function saveSettings() {
     const apiKey = document.getElementById('apiKey').value.trim();
-    const modelName = document.getElementById('modelName').value.trim();
+    const modelName = document.getElementById('modelName').value;
     
     if (!apiKey) {
         alert('請輸入 API 金鑰');
@@ -984,9 +1017,11 @@ function loadSettings() {
     if (savedModelName) {
         apiSettings.modelName = savedModelName;
         document.getElementById('modelName').value = savedModelName;
+        updateModelInfo(savedModelName);
     } else {
         // 設定預設模型
         document.getElementById('modelName').value = 'gemini-1.5-flash';
+        updateModelInfo('gemini-1.5-flash');
     }
 }
 
