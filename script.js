@@ -8,14 +8,11 @@ let converter = null;
 // API 設定
 let apiSettings = {
     apiKey: '',
-    modelName: 'gemini:gemini-2.0-flash-lite-preview-02-05'
+    modelName: 'gemini-2.0-flash-lite-preview-02-05'
 };
 
 // 初始化應用
 document.addEventListener('DOMContentLoaded', function() {
-    // 初始化 OpenCC
-    initOpenCC();
-    
     // 載入儲存的設定
     loadSettings();
     
@@ -27,37 +24,23 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// 初始化 OpenCC 繁簡轉換
-async function initOpenCC() {
-    try {
-        // 檢查 OpenCC 是否可用
-        if (typeof OpenCC !== 'undefined') {
-            // 使用 s2t (簡體到繁體) 配置
-            converter = OpenCC.Converter({ from: 't2s', to: 's2t' });
-            console.log('OpenCC 初始化成功');
-        } else {
-            console.warn('OpenCC 未載入，將跳過繁簡轉換功能');
-        }
-    } catch (error) {
-        console.error('OpenCC 初始化失敗:', error);
-        console.warn('將跳過繁簡轉換功能');
-    }
-}
-
-// 繁簡轉換函數
+// 簡單的繁簡轉換（基本字符對應）
 function convertToSimplified(text) {
-    if (!converter || typeof OpenCC === 'undefined') {
-        console.warn('OpenCC 不可用，返回原文');
-        return text;
+    // 基本繁簡對應
+    const tradToSimp = {
+        '書': '书', '評': '评', '獲': '获', '與': '与', '為': '为',
+        '說': '说', '經': '经', '過': '过', '開': '开', '關': '关',
+        '來': '来', '會': '会', '時': '时', '個': '个', '這': '这',
+        '們': '们', '對': '对', '學': '学', '體': '体', '現': '现',
+        '機': '机', '動': '动', '語': '语', '長': '长', '問': '问',
+        '題': '题', '發': '发', '當': '当', '種': '种', '進': '进'
+    };
+    
+    let result = text;
+    for (let [trad, simp] of Object.entries(tradToSimp)) {
+        result = result.replace(new RegExp(trad, 'g'), simp);
     }
-    try {
-        // 轉為簡體
-        const t2sConverter = OpenCC.Converter({ from: 't2s', to: 's2t' });
-        return OpenCC.Converter({ from: 's2t', to: 't2s' })(text);
-    } catch (error) {
-        console.error('轉換失敗:', error);
-        return text;
-    }
+    return result;
 }
 
 // 主要搜索函數
@@ -449,7 +432,7 @@ function loadSettings() {
         document.getElementById('modelName').value = savedModelName;
     } else {
         // 設定預設模型
-        document.getElementById('modelName').value = 'gemini:gemini-2.0-flash-lite-preview-02-05';
+        document.getElementById('modelName').value = 'gemini-2.0-flash-lite-preview-02-05';
     }
 }
 
@@ -461,11 +444,11 @@ function clearSettings() {
         
         // 清除記憶體中的設定
         apiSettings.apiKey = '';
-        apiSettings.modelName = 'gemini:gemini-2.0-flash-lite-preview-02-05';
+        apiSettings.modelName = 'gemini-2.0-flash-lite-preview-02-05';
         
         // 清除輸入欄位
         document.getElementById('apiKey').value = '';
-        document.getElementById('modelName').value = 'gemini:gemini-2.0-flash-lite-preview-02-05';
+        document.getElementById('modelName').value = 'gemini-2.0-flash-lite-preview-02-05';
         
         // 顯示成功訊息
         const status = document.getElementById('settingsStatus');
