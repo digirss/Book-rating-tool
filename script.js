@@ -2,13 +2,11 @@
 let bookData = {};
 let platformRatings = [];
 
-// OpenCC 繁簡轉換實例
-let converter = null;
 
 // API 設定
 let apiSettings = {
     apiKey: '',
-    modelName: 'gemini-2.0-flash-lite-preview-02-05'
+    modelName: 'gemini-1.5-flash'
 };
 
 // 初始化應用
@@ -152,7 +150,7 @@ async function searchWithGeminiAI(bookTitle) {
 - 只回傳 JSON，不要其他文字`;
 
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${apiSettings.modelName}:generateContent?key=${apiSettings.apiKey}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiSettings.apiKey}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -432,7 +430,7 @@ function loadSettings() {
         document.getElementById('modelName').value = savedModelName;
     } else {
         // 設定預設模型
-        document.getElementById('modelName').value = 'gemini-2.0-flash-lite-preview-02-05';
+        document.getElementById('modelName').value = 'gemini-1.5-flash';
     }
 }
 
@@ -444,11 +442,11 @@ function clearSettings() {
         
         // 清除記憶體中的設定
         apiSettings.apiKey = '';
-        apiSettings.modelName = 'gemini-2.0-flash-lite-preview-02-05';
+        apiSettings.modelName = 'gemini-1.5-flash';
         
         // 清除輸入欄位
         document.getElementById('apiKey').value = '';
-        document.getElementById('modelName').value = 'gemini-2.0-flash-lite-preview-02-05';
+        document.getElementById('modelName').value = 'gemini-1.5-flash';
         
         // 顯示成功訊息
         const status = document.getElementById('settingsStatus');
