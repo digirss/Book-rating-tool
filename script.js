@@ -125,29 +125,9 @@ function getSelectedPlatforms() {
 // 更新模型資訊顯示
 function updateModelInfo(modelName) {
     const modelInfoDiv = document.querySelector('.model-info small');
-    const modelInfo = {
-        'gemini-1.5-flash': {
-            text: '💡 <strong>Gemini 1.5 Flash</strong> 提供最佳的速度和準確度平衡',
-            class: 'info-recommended'
-        },
-        'gemini-1.5-pro': {
-            text: '⚡ <strong>Gemini 1.5 Pro</strong> 最高準確度，適合複雜查詢（付費）',
-            class: 'info-premium'
-        },
-        'gemini-2.0-flash-thinking-exp': {
-            text: '🔬 <strong>Gemini 2.0 Flash</strong> 最新實驗版本，功能強大（可能不穩定）',
-            class: 'info-experimental'
-        },
-        'gemini-1.0-pro': {
-            text: '🔄 <strong>Gemini 1.0 Pro</strong> 穩定版本，基礎功能齊全',
-            class: 'info-stable'
-        }
-    };
-    
-    if (modelInfo[modelName]) {
-        modelInfoDiv.innerHTML = modelInfo[modelName].text;
-        modelInfoDiv.className = `model-description ${modelInfo[modelName].class}`;
-    }
+    // 由於只有一個模型，保持顯示固定資訊
+    modelInfoDiv.innerHTML = '💡 <strong>Gemini 1.5 Flash</strong> 提供最佳的速度和準確度平衡';
+    modelInfoDiv.className = 'model-description info-recommended';
 }
 
 // 主要搜索函數
@@ -480,8 +460,8 @@ ${platformInstructions}
         // 檢查是否因 token 限制被截斷
         const finishReason = data.candidates[0].finishReason;
         if (finishReason === 'MAX_TOKENS') {
-            console.warn('AI 回應因 token 限制被截斷，建議切換模型...');
-            throw new Error('AI 回應被截斷，請切換到 Gemini 1.5 Flash 模型重試');
+            console.warn('AI 回應因 token 限制被截斷，請稍後重試...');
+            throw new Error('AI 回應被截斷，請稍後重試或使用更簡潔的查詢');
         }
         
         // 嘗試解析 JSON
@@ -545,9 +525,7 @@ ${platformInstructions}
             if (aiResponse.length < 100) {
                 errorMessage += '（回應過短，可能查詢失敗）';
             } else if (finishReason === 'MAX_TOKENS') {
-                errorMessage = 'AI 回應被截斷，建議切換到 Gemini 1.5 Flash 模型';
-            } else if (apiSettings.modelName === 'gemini-2.0-flash-thinking-exp') {
-                errorMessage += '。建議切換到 Gemini 1.5 Flash 模型以獲得更穩定的結果';
+                errorMessage = 'AI 回應被截斷，請稍後重試';
             }
             
             throw new Error(errorMessage);
