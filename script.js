@@ -65,7 +65,7 @@ function updateModelInfo(modelName) {
             class: 'info-premium'
         },
         'gemini-2.0-flash-thinking-exp': {
-            text: '🔬 <strong>Gemini 2.0 Flash</strong> 最新實驗版本，功能強大',
+            text: '🔬 <strong>Gemini 2.0 Flash</strong> 最新實驗版本，功能強大（可能不穩定）',
             class: 'info-experimental'
         },
         'gemini-1.0-pro': {
@@ -342,12 +342,23 @@ async function searchWithGeminiAI(bookTitle, inputAuthor) {
         }
 
         const data = await response.json();
+        console.log('API 完整回應:', JSON.stringify(data, null, 2));
         
         if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+            console.error('API 回應格式錯誤:', data);
             throw new Error('API 回應格式錯誤');
         }
 
-        const aiResponse = data.candidates[0].content.parts[0].text;
+        // 處理不同模型的回應格式
+        let aiResponse;
+        if (data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
+            aiResponse = data.candidates[0].content.parts[0].text;
+        } else if (data.candidates[0].content.text) {
+            aiResponse = data.candidates[0].content.text;
+        } else {
+            console.error('無法解析 AI 回應內容:', data.candidates[0].content);
+            throw new Error('無法解析 AI 回應內容格式');
+        }
         
         // 嘗試解析 JSON
         try {
