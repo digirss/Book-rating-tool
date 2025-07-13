@@ -30,23 +30,29 @@ document.addEventListener('DOMContentLoaded', function() {
 // 初始化 OpenCC 繁簡轉換
 async function initOpenCC() {
     try {
-        // 使用 s2t (簡體到繁體) 配置
-        converter = OpenCC.Converter({ from: 't2s', to: 's2t' });
-        console.log('OpenCC 初始化成功');
+        // 檢查 OpenCC 是否可用
+        if (typeof OpenCC !== 'undefined') {
+            // 使用 s2t (簡體到繁體) 配置
+            converter = OpenCC.Converter({ from: 't2s', to: 's2t' });
+            console.log('OpenCC 初始化成功');
+        } else {
+            console.warn('OpenCC 未載入，將跳過繁簡轉換功能');
+        }
     } catch (error) {
         console.error('OpenCC 初始化失敗:', error);
+        console.warn('將跳過繁簡轉換功能');
     }
 }
 
 // 繁簡轉換函數
 function convertToSimplified(text) {
-    if (!converter) {
-        console.warn('OpenCC 未初始化，返回原文');
+    if (!converter || typeof OpenCC === 'undefined') {
+        console.warn('OpenCC 不可用，返回原文');
         return text;
     }
     try {
-        // 先轉為簡體
-        const simplified = OpenCC.Converter({ from: 't2s', to: 's2t' })(text);
+        // 轉為簡體
+        const t2sConverter = OpenCC.Converter({ from: 't2s', to: 's2t' });
         return OpenCC.Converter({ from: 's2t', to: 't2s' })(text);
     } catch (error) {
         console.error('轉換失敗:', error);
