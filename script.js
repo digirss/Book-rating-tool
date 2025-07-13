@@ -365,6 +365,30 @@ function generatePurchaseLinks(bookTitle, author = '') {
     ];
 }
 
+// 生成評分平台的搜尋連結
+function generateRatingPlatformUrl(platform, bookTitle, author = '') {
+    const searchQuery = author ? `${bookTitle} ${author}` : bookTitle;
+    const encodedQuery = encodeURIComponent(searchQuery);
+    
+    switch (platform) {
+        case '豆瓣':
+            return `https://book.douban.com/subject_search?search_text=${encodedQuery}`;
+        case 'Amazon':
+            return `https://www.amazon.com/s?k=${encodedQuery}&i=stripbooks`;
+        case 'Goodreads':
+            return `https://www.goodreads.com/search?q=${encodedQuery}`;
+        case '博客來':
+            return `https://search.books.com.tw/search/query/key/${encodedQuery}/cat/all`;
+        case '讀墨':
+        case 'Readmoo':
+            return `https://readmoo.com/search/keyword?q=${encodedQuery}`;
+        case 'Kobo':
+            return `https://www.kobo.com/tw/zh/search?query=${encodedQuery}`;
+        default:
+            return '#';
+    }
+}
+
 // 計算平均分數和推薦語
 function calculateAverageAndRecommendation() {
     if (bookData.ratings.length === 0) {
@@ -571,11 +595,15 @@ function displayResults() {
 // 創建平台評分卡片
 function createPlatformCard(rating) {
     const card = document.createElement('div');
-    card.className = 'platform-card';
+    card.className = 'platform-card clickable-card';
     
     const ratingDisplay = rating.maxRating === 10 
         ? `${rating.rating} / 10`
         : `${rating.rating} / ${rating.maxRating} → ${rating.normalizedRating.toFixed(1)} / 10`;
+    
+    // 生成平台搜尋連結
+    const cleanTitle = bookData.originalTitle.replace(/資訊不足/g, '').trim();
+    const platformUrl = generateRatingPlatformUrl(rating.platform, cleanTitle, bookData.author);
     
     card.innerHTML = `
         <div class="platform-header">
@@ -583,7 +611,15 @@ function createPlatformCard(rating) {
             <span class="platform-rating">${ratingDisplay}</span>
         </div>
         <div class="platform-summary">${rating.summary}</div>
+        <div class="platform-link-hint">
+            🔗 點擊查看 ${rating.platform} 原始評價
+        </div>
     `;
+    
+    // 添加點擊事件
+    card.addEventListener('click', () => {
+        window.open(platformUrl, '_blank');
+    });
     
     return card;
 }
