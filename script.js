@@ -555,11 +555,23 @@ function showError(message) {
 
 // API 設定相關函數
 function toggleSettings() {
+    console.log('toggleSettings 被呼叫');
     const panel = document.getElementById('settingsPanel');
-    if (panel.style.display === 'none') {
+    
+    if (!panel) {
+        console.error('找不到 settingsPanel 元素');
+        return;
+    }
+    
+    const currentDisplay = window.getComputedStyle(panel).display;
+    console.log('當前顯示狀態:', currentDisplay);
+    
+    if (currentDisplay === 'none') {
         panel.style.display = 'block';
+        console.log('設定為顯示');
     } else {
         panel.style.display = 'none';
+        console.log('設定為隱藏');
     }
 }
 
