@@ -477,14 +477,55 @@ ${platformInstructions}
         console.log('AI 回應內容長度:', aiResponse?.length || 0);
         console.log('AI 回應前100字:', aiResponse?.substring(0, 100) || '無內容');
         
+        // 檢查是否因 token 限制被截斷
+        const finishReason = data.candidates[0].finishReason;
+        if (finishReason === 'MAX_TOKENS') {
+            console.warn('AI 回應因 token 限制被截斷，建議切換模型...');
+            throw new Error('AI 回應被截斷，請切換到 Gemini 1.5 Flash 模型重試');
+        }
+        
         // 嘗試解析 JSON
         try {
-            const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-            if (!jsonMatch) {
-                throw new Error('AI 回應中未找到有效的 JSON');
+            // 先嘗試提取 JSON 區塊
+            let jsonText = aiResponse;
+            
+            // 移除 markdown 代碼塊標記
+            if (jsonText.includes('```json')) {
+                jsonText = jsonText.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
             }
             
-            const result = JSON.parse(jsonMatch[0]);
+            // 尋找 JSON 物件
+            const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) {
+                throw new Error('AI 回應中未找到有效的 JSON 格式');
+            }
+            
+            let jsonString = jsonMatch[0];
+            
+            // 嘗試修復不完整的 JSON（如果被截斷）
+            const bracketCount = (jsonString.match(/\{/g) || []).length - (jsonString.match(/\}/g) || []).length;
+            if (bracketCount > 0) {
+                console.log('檢測到不完整的 JSON，嘗試修復...');
+                // 嘗試智能補全
+                const lines = jsonString.split('\n');
+                const lastLine = lines[lines.length - 1].trim();
+                
+                // 如果最後一行沒有結束標點，加上引號和逗號
+                if (lastLine && !lastLine.endsWith(',') && !lastLine.endsWith('}') && !lastLine.endsWith(']')) {
+                    if (lastLine.includes(':') && !lastLine.includes('"')) {
+                        // 如果是值被截斷，補上引號
+                        jsonString = jsonString.slice(0, -lastLine.length) + lastLine + '"';
+                    }
+                }
+                
+                // 補上缺失的結束括號
+                for (let i = 0; i < bracketCount; i++) {
+                    jsonString += '}';
+                }
+                console.log('JSON 修復完成');
+            }
+            
+            const result = JSON.parse(jsonString);
             
             // 正規化評分為 10 分制
             if (result.ratings) {
@@ -497,7 +538,19 @@ ${platformInstructions}
         } catch (parseError) {
             console.error('JSON 解析失敗:', parseError);
             console.log('AI 原始回應:', aiResponse);
-            throw new Error('AI 回應格式錯誤，無法解析 JSON');
+            
+            // 提供更具體的錯誤訊息和建議
+            let errorMessage = 'AI 回應格式錯誤，無法解析 JSON';
+            
+            if (aiResponse.length < 100) {
+                errorMessage += '（回應過短，可能查詢失敗）';
+            } else if (finishReason === 'MAX_TOKENS') {
+                errorMessage = 'AI 回應被截斷，建議切換到 Gemini 1.5 Flash 模型';
+            } else if (apiSettings.modelName === 'gemini-2.0-flash-thinking-exp') {
+                errorMessage += '。建議切換到 Gemini 1.5 Flash 模型以獲得更穩定的結果';
+            }
+            
+            throw new Error(errorMessage);
         }
         
     } catch (error) {
