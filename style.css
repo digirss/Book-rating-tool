@@ -175,16 +175,10 @@ main {
     background: #f8f9fa;
 }
 
-.platform-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-.platform-column {
+.platform-single {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    justify-content: center;
+    padding: 10px;
 }
 
 .platform-checkbox {
@@ -229,6 +223,15 @@ main {
 
 .platform-checkbox.disabled input[type="checkbox"] {
     cursor: not-allowed;
+}
+
+.platform-checkbox input[type="checkbox"]:disabled {
+    cursor: default;
+}
+
+.platform-checkbox input[type="checkbox"]:disabled + span {
+    color: #667eea;
+    font-weight: 600;
 }
 
 .selection-info {
@@ -832,9 +835,8 @@ footer {
         text-align: center;
     }
     
-    .platform-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
+    .platform-single {
+        padding: 5px;
     }
 }
 

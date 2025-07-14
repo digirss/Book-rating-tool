@@ -55,71 +55,20 @@ function convertToSimplified(text) {
     return result;
 }
 
-// 初始化平台選擇功能
+// 初始化平台選擇功能（簡化版，只有豆瓣讀書）
 function initializePlatformSelection() {
-    const checkboxes = document.querySelectorAll('.platform-checkbox input[type="checkbox"]');
-    const platformCount = document.getElementById('platformCount');
-    
-    // 綁定複選框變更事件
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            updatePlatformSelection();
-        });
-    });
-    
-    // 初始化計數
-    updatePlatformSelection();
+    // 不需要任何事件綁定，因為只有一個平台且被禁用
+    console.log('平台選擇已初始化：專注豆瓣讀書');
 }
 
-// 更新平台選擇狀態
+// 簡化的平台選擇狀態更新（不需要複雜邏輯）
 function updatePlatformSelection() {
-    const checkboxes = document.querySelectorAll('.platform-checkbox input[type="checkbox"]');
-    const platformCount = document.getElementById('platformCount');
-    const checkedBoxes = document.querySelectorAll('.platform-checkbox input[type="checkbox"]:checked');
-    
-    // 更新計數顯示
-    platformCount.textContent = `已選擇 ${checkedBoxes.length} 個平台`;
-    
-    // 檢查是否達到最大選擇數量（3個）
-    if (checkedBoxes.length >= 3) {
-        // 禁用未選中的複選框
-        checkboxes.forEach(checkbox => {
-            if (!checkbox.checked) {
-                checkbox.disabled = true;
-                checkbox.parentElement.classList.add('disabled');
-            }
-        });
-        platformCount.style.color = '#ffc107';
-        platformCount.textContent = `已選擇 ${checkedBoxes.length} 個平台（最多3個）`;
-    } else {
-        // 啟用所有複選框
-        checkboxes.forEach(checkbox => {
-            checkbox.disabled = false;
-            checkbox.parentElement.classList.remove('disabled');
-        });
-        platformCount.style.color = '#667eea';
-    }
-    
-    // 更新複選框外觀
-    checkboxes.forEach(checkbox => {
-        if (checkbox.checked) {
-            checkbox.parentElement.classList.add('checked');
-        } else {
-            checkbox.parentElement.classList.remove('checked');
-        }
-    });
-    
-    // 檢查是否至少選擇一個平台
-    if (checkedBoxes.length === 0) {
-        platformCount.style.color = '#dc3545';
-        platformCount.textContent = '請至少選擇一個平台';
-    }
+    // 由於只有豆瓣讀書，不需要複雜的更新邏輯
 }
 
-// 獲取選中的平台列表
+// 獲取選中的平台列表（固定返回豆瓣讀書）
 function getSelectedPlatforms() {
-    const checkedBoxes = document.querySelectorAll('.platform-checkbox input[type="checkbox"]:checked');
-    return Array.from(checkedBoxes).map(checkbox => checkbox.value);
+    return ['豆瓣讀書'];
 }
 
 // 更新模型資訊顯示
@@ -134,17 +83,14 @@ function updateModelInfo(modelName) {
 async function searchBook() {
     const bookTitle = document.getElementById('bookTitle').value.trim();
     const bookAuthor = document.getElementById('bookAuthor').value.trim();
-    const selectedPlatforms = getSelectedPlatforms();
+    const selectedPlatforms = getSelectedPlatforms(); // 固定返回 ['豆瓣讀書']
     
     if (!bookTitle && !bookAuthor) {
         alert('請至少輸入書名或作者');
         return;
     }
     
-    if (selectedPlatforms.length === 0) {
-        alert('請至少選擇一個查詢平台');
-        return;
-    }
+    // 移除平台選擇驗證，因為固定使用豆瓣讀書
     
     // 顯示載入狀態
     showLoading();
@@ -261,10 +207,8 @@ async function searchWithGeminiAI(bookTitle, inputAuthor, selectedPlatforms = []
     
     let prompt = '';
     
-    // 準備平台列表說明
-    const platformsText = selectedPlatforms.length > 0 
-        ? `🎯 **限制查詢平台**（只查詢以下選定平台）：${selectedPlatforms.join('、')}`
-        : `📋 查詢所有平台`;
+    // 專注豆瓣讀書平台
+    const platformsText = `🎯 **專注查詢豆瓣讀書平台**：華語地區最權威的書籍評分平台`;
 
     if (searchType === 'author_books') {
         prompt = `請模擬 Google 搜尋「${inputAuthor} 著作 書籍 評分」的行為，查詢該作者的真實著作及評分資料：
@@ -298,32 +242,17 @@ ${platformsText}
 
 📊 **資料準確性要求**：
 - 請確認作者名稱正確，基於真實存在的著作
-- ${selectedPlatforms.length > 0 ? `只查詢選定的平台：${selectedPlatforms.join('、')}` : '參考各平台真實評分資料'}
-- 如果某本書在特定平台找不到評分，請在 summary 中註明「未找到確切評分」
+- 專注查詢豆瓣讀書平台的真實評分資料
+- 如果在豆瓣讀書找不到評分，請在 summary 中註明「未找到確切評分」
 - 如果找不到該作者，請回傳空的 books 陣列
 - 寧可提供較少但準確的書籍，也不要編造不存在的著作`;
 
     } else {
-        let platformInstructions = '';
-        if (selectedPlatforms.length > 0) {
-            platformInstructions = `🎯 **限制查詢平台**（只查詢以下選定平台）：
-${selectedPlatforms.map((p, i) => `${i + 1}. ${p}`).join('\n')}
+        // 專注豆瓣讀書平台
+        const platformInstructions = `🎯 **專注查詢豆瓣讀書平台**：
+1. 豆瓣讀書 - 華語地區最權威的書籍評分平台
 
-💡 請只查詢上述選定的 ${selectedPlatforms.length} 個平台`;
-        } else {
-            platformInstructions = `⭐ 查詢平台優先順序：
-【主要平台】（優先查詢）：
-1. 豆瓣讀書
-2. Amazon Books  
-3. Goodreads
-
-【備用平台】（主要平台找不到時才查詢）：
-4. 博客來
-5. 讀墨 (Readmoo)
-6. Kobo
-
-💡 平台名稱請統一使用：豆瓣讀書、Amazon Books、Goodreads、博客來、讀墨、Kobo`;
-        }
+💡 由於豆瓣讀書擁有最豐富的華語書籍評價資料庫，本工具專注於提供豆瓣的準確評分`;
 
         prompt = `請模擬 Google 搜尋「${searchQuery} 評分 評價」的行為，查詢真實的書籍評分資料。
 
@@ -335,13 +264,11 @@ ${selectedPlatforms.map((p, i) => `${i + 1}. ${p}`).join('\n')}
 ${platformInstructions}
 
 💡 **評分資料來源**：
-請參考 Google 搜尋結果中通常顯示的平台評分格式：
-- 博客來：X.X/5星 (X個評價)
-- 讀墨：X.X/5星 (X個評價) 
-- Amazon：X.X/5星 (X個評價)
-- Goodreads：X.X/5星 (X個評價)
+專注查詢豆瓣讀書平台的評分格式：
 - 豆瓣讀書：X.X/10分 (X個評價)
-- Kobo：X.X/5星 (X個評價)
+
+🎯 **豆瓣讀書專注策略**：
+由於豆瓣讀書是華語地區最具權威性的書籍評分平台，本工具專注於提供豆瓣的準確評分資料
 
 📋 回覆要求：
 - 所有內容必須使用繁體中文
