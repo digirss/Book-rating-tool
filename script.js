@@ -592,7 +592,9 @@ function calculateAverageAndRecommendation() {
     
     // 生成推薦語
     const avgScore = parseFloat(bookData.averageScore);
-    if (avgScore >= 8.5) {
+    if (avgScore === 0.0) {
+        bookData.recommendation = '無法判斷';
+    } else if (avgScore >= 8.5) {
         bookData.recommendation = '非常推薦';
     } else if (avgScore >= 7.0) {
         bookData.recommendation = '可考慮閱讀';
@@ -835,7 +837,8 @@ function createAuthorBookCard(book) {
     let recommendation = '無評分';
     if (validRatings > 0) {
         const avgScore = parseFloat(averageScore);
-        if (avgScore >= 8.5) recommendation = '非常推薦';
+        if (avgScore === 0.0) recommendation = '無法判斷';
+        else if (avgScore >= 8.5) recommendation = '非常推薦';
         else if (avgScore >= 7.0) recommendation = '可考慮閱讀';
         else if (avgScore >= 6.0) recommendation = '勉強一讀';
         else recommendation = '不推薦';
