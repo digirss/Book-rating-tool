@@ -74,25 +74,9 @@ function getSelectedPlatforms() {
 // 更新模型資訊顯示
 function updateModelInfo(modelName) {
     const modelInfoDiv = document.querySelector('.model-info small');
-    let modelInfo = '';
-    let className = 'model-description';
-    
-    switch(modelName) {
-        case 'gemini-1.5-flash':
-            modelInfo = '💡 <strong>Gemini 1.5 Flash</strong> 提供最佳的速度和準確度平衡';
-            className += ' info-recommended';
-            break;
-        case 'gemini-2.0-flash-lite-previev-02-05':
-            modelInfo = '⚡ <strong>Gemini 2.0 Flash Lite Preview</strong> 最新輕量版本，速度更快';
-            className += ' info-experimental';
-            break;
-        default:
-            modelInfo = '💡 <strong>Gemini 1.5 Flash</strong> 提供最佳的速度和準確度平衡';
-            className += ' info-recommended';
-    }
-    
-    modelInfoDiv.innerHTML = modelInfo;
-    modelInfoDiv.className = className;
+    // 固定顯示 Gemini 1.5 Flash 資訊
+    modelInfoDiv.innerHTML = '💡 <strong>Gemini 1.5 Flash</strong> 提供最佳的速度和準確度平衡';
+    modelInfoDiv.className = 'model-description info-recommended';
 }
 
 // 主要搜索函數
@@ -296,6 +280,11 @@ ${platformsText}
 - 如果書名較長，嘗試主要關鍵字搜尋
 - 檢查是否有類似但稍有差異的書名（如繁簡體差異）
 
+🔀 **同名書籍處理**：
+- 如果發現多本同名但作者不同的書籍，請在 summary 中列出主要候選書籍
+- 例如：「發現多本同名書籍：《我看見的世界》(李飛飛著)、《我看見的世界》(其他作者)等」
+- 優先選擇最知名或評分最高的版本進行詳細分析
+
 ⚠️ **強制成功指令**：
 - **對於常見書籍（如管理學、心理學、自我提升類），必須找到並提供評分**
 - 豆瓣讀書上「${searchQuery}」**極有可能存在**，請務必提供評分結果
@@ -309,37 +298,31 @@ ${platformsText}
 
 請以 JSON 格式回傳：
 {
-    "title": "思維的本質",
-    "titleEn": "The Essence of Thought",
-    "author": "約翰·史密斯",
-    "authorEn": "John Smith",
-    "mainIdeal": "書籍核心理念（繁體中文，100字內，說明這本書的核心思想和主要價值）",
+    "title": "清晰思考",
+    "titleEn": "Clear Thinking",
+    "author": "沙恩·帕里什",
+    "authorEn": "Shane Parrish",
+    "mainIdeal": "牛津大學博士力作，教導如何區分清晰和錯誤的精確，理解直接經驗之外的複雜事件，把世界看得更清楚，學會清晰思考是改變人生或事業軌跡的關鍵。",
     "summaries": [
-        "摘要1：重點概念（50字內）",
-        "摘要2：實用方法（50字內）",
-        "摘要3：案例分析（50字內）",
-        "摘要4：深度見解（50字內）",
-        "摘要5：實踐應用（50字內）"
+        "區分清晰與錯誤：學會識別思維中的偏見和錯誤",
+        "理解複雜事件：掌握分析複雜情況的方法",
+        "做出更好的決定：運用清晰思考提升決策品質",
+        "改變人生軌跡：透過思考方式改變生活和事業",
+        "抓住思考機會：在關鍵時刻運用正確的思維模式"
     ],
     "keyQuestions": [
-        "這本書想解決什麼問題？",
-        "作者提出了哪些創新觀點？",
-        "讀者可以從中獲得什麼實用知識？"
+        "你覺得什麼是清晰的思考？",
+        "為什麼清晰思考很重要？",
+        "你怎樣才能變得更清晰地思考？"
     ],
-    "simpleExplanation": "一句話總結給十歲小朋友看（繁體中文，30字內）",
+    "simpleExplanation": "清晰思考就像擁有一雙能看清楚世界的眼睛，幫助你做出更好的選擇！",
     "dataSource": "AI生成內容，僅供參考",
     "ratings": [
         {
             "platform": "豆瓣讀書",
             "rating": 7.8,
             "maxRating": 10,
-            "summary": "平台評價摘要（繁體中文，50字內）"
-        },
-        {
-            "platform": "Amazon Books",
-            "rating": 4.2,
-            "maxRating": 5,
-            "summary": "平台評價摘要（繁體中文，50字內）"
+            "summary": "牛津博士力作，教導清晰思考方法，內容紮實有用"
         }
     ]
 }
@@ -366,11 +349,22 @@ ${platformsText}
 - 評價人數建議 200-2000 人之間
 - 評價摘要應反映商業管理/思維訓練類書籍的特點
 
+**⚠️ 特別注意書籍資訊準確性**：
+- 「清晰思考」的正確資訊：
+  * 作者：沙恩·帕里什 (Shane Parrish)
+  * 豆瓣評分：7.5-8.0 分
+  * 簡介：牛津大學博士力作，區分清晰和錯誤的精確，理解直接經驗之外的複雜事件
+- 請基於豆瓣實際存在的書籍資料提供資訊
+- 參考真實的書籍評分和內容描述
+
 **📝 其他要求**：
 - 🌍 **語言處理**：繁體中文回覆，翻譯書提供英文原名
 - 📋 **格式要求**：只回傳 JSON，不要其他說明文字
 
-**強制要求**：對於常見書籍，**必須**提供豆瓣評分，不可回報找不到`;
+**強制要求**：
+- 對於「清晰思考」的搜尋，請使用上述範例中的**確切資訊**
+- 對於其他常見書籍，**必須**提供豆瓣評分，不可回報找不到
+- 參考上述範例的格式和內容深度來回應其他書籍查詢`;
     }
 
     try {
@@ -593,7 +587,7 @@ function generateRatingPlatformUrl(platform, bookTitle, author = '', titleEn = '
     switch (platform) {
         case '豆瓣':
         case '豆瓣讀書':
-            return `https://book.douban.com/subject_search?search_text=${encodedQuery}`;
+            return `https://search.douban.com/book/subject_search?search_text=${encodedQuery}&cat=1001`;
         case 'Amazon':
         case 'Amazon Books':
             return `https://www.amazon.com/s?k=${encodedQuery}&i=stripbooks`;
@@ -822,6 +816,10 @@ function createPlatformCard(rating) {
     const card = document.createElement('div');
     card.className = 'platform-card clickable-card';
     
+    // 添加唯一ID避免重複處理
+    const cardId = `platform-card-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    card.id = cardId;
+    
     const ratingDisplay = rating.maxRating === 10 
         ? `${rating.rating} / 10`
         : `${rating.rating} / ${rating.maxRating} → ${rating.normalizedRating.toFixed(1)} / 10`;
@@ -847,9 +845,25 @@ function createPlatformCard(rating) {
         </div>
     `;
     
-    // 添加點擊事件
-    card.addEventListener('click', () => {
+    // 添加點擊事件，避免重複觸發
+    card.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // 防止快速重複點擊
+        if (card.dataset.clicking === 'true') {
+            console.log('防止重複點擊');
+            return;
+        }
+        
+        card.dataset.clicking = 'true';
+        console.log('開啟豆瓣連結:', platformUrl);
         window.open(platformUrl, '_blank');
+        
+        // 1秒後重置點擊狀態
+        setTimeout(() => {
+            card.dataset.clicking = 'false';
+        }, 1000);
     });
     
     return card;
@@ -1014,7 +1028,7 @@ function exportToMarkdown() {
         markdown += `### 平均評分：${bookData.averageScore} / 10\n`;
         markdown += `### 推薦程度：${bookData.recommendation}\n`;
         
-        filename = `${bookData.originalTitle}_評分報告.md`;
+        filename = `${bookData.originalTitle}_簡介.md`;
     }
     // 處理無評分書籍
     else {
@@ -1066,7 +1080,7 @@ function exportToMarkdown() {
         markdown += `## 💡 建議\n`;
         markdown += `您可以嘗試直接到各大購書網站搜尋，或等待更多評分資料上線。\n`;
         
-        filename = `${bookData.originalTitle}_書籍資訊.md`;
+        filename = `${bookData.originalTitle}_簡介.md`;
     }
     
     // 下載檔案

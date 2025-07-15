@@ -39,7 +39,6 @@
                         <h4>🤖 使用的 AI 模型：</h4>
                         <ul>
                             <li><strong>Gemini 1.5 Flash</strong>：速度快、準確度高、穩定可靠，免費額度使用</li>
-                            <li><strong>Gemini 2.0 Flash Lite Preview</strong>：最新輕量版本，速度更快，實驗性功能</li>
                         </ul>
                     </div>
 
@@ -61,7 +60,6 @@
                         <label for="modelName">AI 模型選擇</label>
                         <select id="modelName" class="model-select">
                             <option value="gemini-1.5-flash">Gemini 1.5 Flash - 🆓 免費額度內</option>
-                            <option value="gemini-2.0-flash-lite-previev-02-05">Gemini 2.0 Flash Lite Preview - 🆓 免費額度內</option>
                         </select>
                         <div class="model-info">
                             <small>💡 <strong>Gemini 1.5 Flash</strong> 提供最佳的速度和準確度平衡</small>
@@ -82,7 +80,10 @@
                 </div>
                 <div class="input-group">
                     <label for="bookAuthor">作者（選填）</label>
-                    <input type="text" id="bookAuthor" placeholder="輸入作者名稱可提高查詢準確度">
+                    <input type="text" id="bookAuthor" placeholder="輸入作者名稱可提高查詢準確度，避免同名書籍混淆">
+                    <small style="color: #666; font-size: 0.9rem; margin-top: 5px;">
+                        💡 提示：對於常見書名（如《我看見的世界》），建議輸入作者名稱以獲得更精確的結果
+                    </small>
                 </div>
                 <div class="input-group">
                     <label>查詢平台</label>
